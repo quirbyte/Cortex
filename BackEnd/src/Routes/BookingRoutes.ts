@@ -1,6 +1,7 @@
 import { Router, Request, Response } from "express";
 import { userMiddleware } from "../Middleware/UserMiddleware";
 import { TenantMiddleware } from "../Middleware/TenantMiddleware";
+import { BookingModel } from "../Models/Booking";
 
 export const BookingRouter = Router();
 

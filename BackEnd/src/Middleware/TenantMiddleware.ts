@@ -1,3 +1,5 @@
-export function TenantMiddleware(req,res,next){
+import { Request,Response } from "express";
+
+export function TenantMiddleware(req:Request,res:Response,next:Function){
     
 }

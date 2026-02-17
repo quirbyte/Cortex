@@ -83,6 +83,10 @@ UserRouter.post("/signin", async (req: Request, res: Response) => {
   }
 });
 
-UserRouter.get("/me", userMiddleware, (req: Request, res: Response) => {});
+UserRouter.get("/me", userMiddleware, (req: Request, res: Response) => {
+  
+});
 
-UserRouter.put("/update", userMiddleware, (req: Request, res: Response) => {});
+UserRouter.put("/update", userMiddleware, (req: Request, res: Response) => {
+
+});

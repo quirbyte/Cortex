@@ -1,6 +1,7 @@
 import { Router, Request, Response } from "express";
 import { userMiddleware } from "../Middleware/UserMiddleware";
 import { TenantMiddleware } from "../Middleware/TenantMiddleware";
+import { TenantModel } from "../Models/Tenant";
 
 const TenantRouter = Router();
 

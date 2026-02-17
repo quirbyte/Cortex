@@ -1,5 +1,6 @@
 import { Router, Request, Response } from "express";
 import { TenantMiddleware } from "../Middleware/TenantMiddleware";
+import { EventModel } from "../Models/Event";
 
 export const EventRouter = Router();
 
