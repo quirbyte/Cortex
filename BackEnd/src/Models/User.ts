@@ -19,8 +19,7 @@ const UserSchema = new Schema<InterfaceUser>({
     password:{
         type:String,
         required:true,
-        unique:true
     }
-})
+},{timestamps:true})
 
 export const UserModel = model<InterfaceUser>("User",UserSchema);

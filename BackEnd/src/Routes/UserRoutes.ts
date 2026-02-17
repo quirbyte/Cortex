@@ -5,8 +5,9 @@ import bcrypt from "bcrypt";
 import z from "zod";
 import jwt from "jsonwebtoken";
 import { UserModel } from "../Models/User";
+import { userMiddleware } from "../Middleware/UserMiddleware";
 
-const UserRouter = Router();
+export const UserRouter = Router();
 
 UserRouter.post("/signup", async (req: Request, res: Response) => {
   const requiredBody = z.object({
@@ -81,3 +82,7 @@ UserRouter.post("/signin", async (req: Request, res: Response) => {
     });
   }
 });
+
+UserRouter.get("/me", userMiddleware, (req: Request, res: Response) => {});
+
+UserRouter.put("/update", userMiddleware, (req: Request, res: Response) => {});

@@ -2,24 +2,28 @@ import { Router, Request, Response } from "express";
 import { userMiddleware } from "../Middleware/UserMiddleware";
 import { TenantMiddleware } from "../Middleware/TenantMiddleware";
 
-const TenantRouter = Router();
+export const BookingRouter = Router();
 
-TenantRouter.post(
-  "/create",
+BookingRouter.post(
+  "/book",
   userMiddleware,
   (req: Request, res: Response) => {},
 );
 
-TenantRouter.get(
-  "/my-organizations",
+BookingRouter.get(
+  "/my-tickets",
   userMiddleware,
   (req: Request, res: Response) => {},
 );
 
-TenantRouter.get("/:slug", (req: Request, res: Response) => {});
+BookingRouter.get(
+  "/event/:eventId",
+  TenantMiddleware,
+  (req: Request, res: Response) => {},
+);
 
-TenantRouter.patch(
-  "/update/:id",
+BookingRouter.post(
+  "/verify",
   TenantMiddleware,
   (req: Request, res: Response) => {},
 );

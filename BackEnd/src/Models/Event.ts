@@ -43,7 +43,8 @@ const EventSchema = new Schema<InterfaceEvent>({
         },
         total:{
             type:Number,
-            required:true
+            required:true,
+            default:1
         },
         sold:{
             type:Number,
@@ -51,6 +52,6 @@ const EventSchema = new Schema<InterfaceEvent>({
             default:0,
         }
     }
-})
+},{timestamps:true})
 
 export const EventModel = model<InterfaceEvent>("Event",EventSchema);
