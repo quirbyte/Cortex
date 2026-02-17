@@ -4,7 +4,7 @@ import jwt, { JwtPayload } from "jsonwebtoken";
 dotenv.config();
 
 export function userMiddleware(req: Request, res: Response, next: Function) {
-  const token = req.headers.authorization;
+  const token = req.headers["token"] as string;
   if (!token) {
     return res.status(404).json({
       msg: "Token does not exist",
