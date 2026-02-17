@@ -3,6 +3,7 @@ import mongoose,{Document,Schema,model} from "mongoose";
 export interface InterfaceUser extends Document{
     name: string,
     email: string,
+    password: string
 }
 
 const UserSchema = new Schema<InterfaceUser>({
@@ -15,6 +16,11 @@ const UserSchema = new Schema<InterfaceUser>({
         required: true,
         unique: true,
     },
+    password:{
+        type:String,
+        required:true,
+        unique:true
+    }
 })
 
-export const User = model<InterfaceUser>("User",UserSchema);
+export const UserModel = model<InterfaceUser>("User",UserSchema);

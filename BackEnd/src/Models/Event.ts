@@ -53,4 +53,4 @@ const EventSchema = new Schema<InterfaceEvent>({
     }
 })
 
-export const Event = model<InterfaceEvent>("Event",EventSchema);
+export const EventModel = model<InterfaceEvent>("Event",EventSchema);

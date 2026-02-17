@@ -19,4 +19,4 @@ const TenantSchema = new Schema<InterfaceTenant>({
     }
 })
 
-export const Tenant = model<InterfaceTenant>("Tenant",TenantSchema);
+export const TenantModel = model<InterfaceTenant>("Tenant",TenantSchema);
