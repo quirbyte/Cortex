@@ -89,7 +89,26 @@ UserRouter.post("/signin", async (req: Request, res: Response) => {
   }
 });
 
-UserRouter.get("/me", userMiddleware, (req: Request, res: Response) => {});
+UserRouter.get("/me", userMiddleware,async (req: Request, res: Response) => {
+  try{
+    if(!req.userId){
+      return res.status(404).json({
+        msg: "Unauthorized User!"
+      });
+    }
+    const user = await UserModel.findOne({
+      _id:req.userId
+    }).select("-password");
+    return res.json({
+      user,
+      msg: "Fetched User Details successfully!!"
+    })
+  }catch(e){
+    return res.status(500).json({
+      msg: "Failed to Find User Data!!"
+    })
+  }
+});
 
 UserRouter.put(
   "/update",
