@@ -66,10 +66,32 @@ TenantRouter.get(
   },
 );
 
-TenantRouter.get("/:slug", (req: Request, res: Response) => {});
+TenantRouter.get("/:slug",async (req: Request, res: Response) => {
+  try {
+    const slug = req.params.slug as string;
+    const slugObj = await TenantModel.findOne({
+      slug:slug.toLowerCase()
+    }).select("name slug");
+    if(!slugObj){
+      return res.status(404).json({
+        msg: "Slug Not Found!!"
+      })
+    }
+    return res.json({
+      slugObj,
+      msg: "Fetched Slug Details successfully!"
+    })
+  } catch (e) {
+    return res.status(500).json({
+      msg: "Failed to Fetch Slug Details..",
+    });
+  }
+});
 
 TenantRouter.patch(
   "/update/:id",
   TenantMiddleware,
-  (req: Request, res: Response) => {},
+  (req: Request, res: Response) => {
+    
+  },
 );
