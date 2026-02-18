@@ -9,34 +9,34 @@ TenantRouter.post(
   "/create",
   userMiddleware,
   async (req: Request, res: Response) => {
-    try{
-      if(!req.userId){
+    try {
+      if (!req.userId) {
         return res.status(404).json({
           msg: "User not verified!!",
         });
       }
-      let {name,slug} = req.body;
-      slug=slug.trim().toLowerCase().replace(/\s+/g, '-');
+      let { name, slug } = req.body;
+      slug = slug.trim().toLowerCase().replace(/\s+/g, "-");
       const sameSlug = await TenantModel.findOne({
-        slug:slug
+        slug: slug,
       });
-      if(sameSlug){
+      if (sameSlug) {
         return res.status(409).json({
-          msg: "Slug already exists!!"
-        })
+          msg: "Slug already exists!!",
+        });
       }
       await TenantModel.create({
-        name:name,
-        slug:slug,
-        userId:req.userId
+        name: name,
+        slug: slug,
+        userId: req.userId,
       });
       return res.json({
-        msg: "Created Tenant successfully!!"
-      })
-    }catch(e){
+        msg: "Created Tenant successfully!!",
+      });
+    } catch (e) {
       return res.status(500).json({
-        msg: "Failed to Create Tenant"
-      })
+        msg: "Failed to Create Tenant",
+      });
     }
   },
 );
@@ -44,7 +44,26 @@ TenantRouter.post(
 TenantRouter.get(
   "/my-organizations",
   userMiddleware,
-  (req: Request, res: Response) => {},
+  async (req: Request, res: Response) => {
+    try {
+      if (!req.userId) {
+        return res.status(404).json({
+          msg: "User not verified!!",
+        });
+      }
+      const userOrgs = await TenantModel.find({
+        userId: req.userId,
+      }).sort({ createdAt: -1 });
+      return res.json({
+        userOrgs,
+        msg: "Fetched User Org Details successfully",
+      });
+    } catch (e) {
+      return res.status(500).json({
+        msg: "Failed to Fetch Org Details..",
+      });
+    }
+  },
 );
 
 TenantRouter.get("/:slug", (req: Request, res: Response) => {});
