@@ -9,6 +9,12 @@ import { userMiddleware } from "../Middleware/UserMiddleware";
 
 export const UserRouter = Router();
 
+interface UserUpdate {
+  name?: string;
+  email?: string;
+  password?: string;
+}
+
 UserRouter.post("/signup", async (req: Request, res: Response) => {
   const requiredBody = z.object({
     username: z.string().min(5).max(20),
@@ -25,7 +31,7 @@ UserRouter.post("/signup", async (req: Request, res: Response) => {
     const username = req.body.username;
     const email = req.body.email;
     const password = req.body.password;
-    const hashed_pw = await bcrypt.hash(password, 5);
+    const hashed_pw = await bcrypt.hash(password, 10);
     await UserModel.create({
       name: username,
       email: email,
@@ -83,10 +89,51 @@ UserRouter.post("/signin", async (req: Request, res: Response) => {
   }
 });
 
-UserRouter.get("/me", userMiddleware, (req: Request, res: Response) => {
-  
-});
+UserRouter.get("/me", userMiddleware, (req: Request, res: Response) => {});
 
-UserRouter.put("/update", userMiddleware, (req: Request, res: Response) => {
-
-});
+UserRouter.put(
+  "/update",
+  userMiddleware,
+  async (req: Request, res: Response) => {
+    try {
+      if (!req.userId) {
+        return res.status(404).json({
+          msg: "User not verified!!",
+        });
+      }
+      const { updatedName, updatedEmail, updatedPasswd } = req.body;
+      const updatedData: UserUpdate = {};
+      if (updatedName && updatedName.trim() !== "") {
+        updatedData.name = updatedName;
+      }
+      if (updatedEmail && updatedEmail.trim() !== "") {
+        updatedData.email = updatedEmail;
+      }
+      if (updatedPasswd && updatedPasswd.trim() !== "") {
+        const hashed_pw = await bcrypt.hash(updatedPasswd, 10);
+        updatedData.password = hashed_pw;
+      }
+      if (Object.keys(updatedData).length > 0) {
+        await UserModel.updateOne(
+          {
+            _id: req.userId,
+          },
+          {
+            $set: updatedData,
+          },
+        );
+        return res.json({
+          msg: "Data Updated Successfully!!",
+        });
+      } else {
+        return res.status(404).json({
+          msg: "Nothing to update!!",
+        });
+      }
+    } catch (e) {
+      return res.status(500).json({
+        msg: "Failed to Update data!!",
+      });
+    }
+  },
+);
