@@ -115,33 +115,36 @@ TenantRouter.patch(
         updatedData.name = updatedName;
       }
       if (updatedSlug && updatedSlug.trim() !== "") {
-        updatedSlug = updatedSlug
-          .trim()
-          .toLowerCase()
-          .replace(/\s+/g, "-");
-          const existingSlug = await TenantModel.findOne({
-            slug:updatedSlug
+        updatedSlug = updatedSlug.trim().toLowerCase().replace(/\s+/g, "-");
+        const existingSlug = await TenantModel.findOne({
+          slug: updatedSlug,
+        });
+        if (existingSlug && existingSlug._id.toString() !== TenantFromReq) {
+          return res.status(400).json({
+            msg: "This slug is already taken by another organization!",
           });
-          if(existingSlug && existingSlug._id.toString()!== TenantFromReq){
-            return res.status(400).json({ msg: "This slug is already taken by another organization!" });
-          }
-          updatedData.slug=updatedSlug;
+        }
+        updatedData.slug = updatedSlug;
       }
       if (Object.keys(updatedData).length === 0) {
         return res.status(400).json({
           msg: "Nothing to update!!",
         });
       }
+      if (!Types.ObjectId.isValid(TenantFromReq as string)) {
+        return res.status(400).json({ msg: "Invalid ID format" });
+      }
+      const queryId = new Types.ObjectId(TenantFromReq as string);
       const result = await TenantModel.updateOne(
-          {
-            _id: TenantFromReq as any,
-            userId: req.userId
-          },
-          {
-            $set: updatedData,
-          },
-        );
-        if (result.matchedCount === 0) {
+        {
+          _id: queryId,
+          userId: req.userId,
+        },
+        {
+          $set: updatedData,
+        },
+      );
+      if (result.matchedCount === 0) {
         return res.status(403).json({
           msg: "Tenant not found or you don't have permission to update it.",
         });
