@@ -2,7 +2,7 @@ import { Request,Response } from "express";
 import { TenantModel } from "../Models/Tenant";
 
 export async function TenantMiddleware(req:Request,res:Response,next:Function){
-    const tenantId = req.headers["tenantId"] as string;
+    const tenantId = req.headers["tenant-id"] as string;
     if(!tenantId){
         return res.status(404).json({
             msg: "Tenant Id not found!!"

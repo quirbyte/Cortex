@@ -18,13 +18,13 @@ interface UserUpdate {
 UserRouter.post("/signup", async (req: Request, res: Response) => {
   const requiredBody = z.object({
     username: z.string().min(5).max(20),
-    email: z.email().min(10),
+    email: z.string().email().min(10),
     password: z.string().min(6),
   });
   const { error, success } = requiredBody.safeParse(req.body);
   if (!success) {
     return res.status(400).json({
-      msg: error,
+      msg: error.flatten().fieldErrors,
     });
   }
   try {
@@ -49,13 +49,13 @@ UserRouter.post("/signup", async (req: Request, res: Response) => {
 
 UserRouter.post("/signin", async (req: Request, res: Response) => {
   const requiredBody = z.object({
-    email: z.email().min(10),
+    email: z.string().email().min(10),
     password: z.string().min(6),
   });
   const { error, success } = requiredBody.safeParse(req.body);
   if (!success) {
     return res.status(400).json({
-      msg: error,
+      msg: error.flatten().fieldErrors,
     });
   }
   try {

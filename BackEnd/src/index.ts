@@ -20,13 +20,14 @@ app.use("/api/v1/tenant", TenantRouter);
 app.use("/api/v1/events", EventRouter);
 app.use("/api/v1/bookings", BookingRouter);
 
+const USER_SECRET = process.env.USER_SECRET;
 const PORT = process.env.PORT || 3000;
 const MONGO_URL = process.env.MONGO_URL || "";
 
 const startServer = async () => {
   try {
-    if (!MONGO_URL) {
-      throw new Error("Mongo Url mssing!!");
+    if (!MONGO_URL || !USER_SECRET) {
+      throw new Error("Mongo Url or jwt secret mssing!!");
     }
 
     await mongoose.connect(MONGO_URL);

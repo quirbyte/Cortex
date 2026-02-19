@@ -24,7 +24,7 @@ BookingRouter.post(
       const { eventId } = req.body;
       const matchingEvent = await EventModel.findOne({
         _id: eventId,
-        isDeleted:false
+        isDeleted: false,
       });
       if (!matchingEvent) {
         return res.status(400).json({
@@ -154,9 +154,10 @@ BookingRouter.post(
         return res.status(400).json({ msg: "Invalid Ticket format" });
       }
 
-      const booking = (await BookingModel.findById(bookingId).populate(
+      const queryBookingId = new Types.ObjectId(bookingId);
+      const booking = (await BookingModel.findById(queryBookingId).populate(
         "event_id",
-      )) as unknown as PopulatedBooking;
+      )) as PopulatedBooking | null;
 
       if (!booking) {
         return res.status(404).json({
