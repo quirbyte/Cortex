@@ -183,7 +183,48 @@ EventRouter.put(
   "/:id",
   userMiddleware,
   TenantMiddleware,
-  (req: Request, res: Response) => {},
+  async (req: Request, res: Response) => {
+    try {
+      if (!req.userId || !req.tenantId) {
+        return res
+          .status(401)
+          .json({ msg: "Authentication/Tenant context missing" });
+      }
+      const isValidUpdate = createEventSchema.partial().safeParse(req.body);
+      if (!isValidUpdate.success) {
+        return res.status(400).json({
+          msg: "Validation failed",
+          errors: isValidUpdate.error.flatten().fieldErrors,
+        });
+      }
+      const EventFromReq = req.params.id;
+      if (!Types.ObjectId.isValid(EventFromReq as string)) {
+        return res.status(400).json({ msg: "Invalid ID format" });
+      }
+      const queryId = new Types.ObjectId(EventFromReq as string);
+      const EventUpdate = await EventModel.findOneAndUpdate(
+        {
+          _id: queryId,
+          tenantId: req.tenantId,
+        },
+        {$set:isValidUpdate.data},
+        {new:true}
+      );
+      if (!EventUpdate) {
+        return res.status(404).json({
+          msg: "Tenant has no events!!",
+        });
+      }
+      return res.json({
+        msg: "Event updated successfully!",
+        updated_event: EventUpdate
+      });
+    } catch (e) {
+      return res.status(500).json({
+        msg: "Internal server error during event update",
+      });
+    }
+  },
 );
 
 EventRouter.delete(

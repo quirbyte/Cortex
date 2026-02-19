@@ -97,7 +97,7 @@ TenantRouter.get("/:slug", async (req: Request, res: Response) => {
   }
 });
 
-TenantRouter.patch(
+TenantRouter.put(
   "/update/:id",
   userMiddleware,
   TenantMiddleware,
