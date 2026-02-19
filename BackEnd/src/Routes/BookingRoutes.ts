@@ -2,19 +2,69 @@ import { Router, Request, Response } from "express";
 import { Types } from "mongoose";
 import { userMiddleware } from "../Middleware/UserMiddleware";
 import { TenantMiddleware } from "../Middleware/TenantMiddleware";
-import { BookingModel,InterfaceBooking } from "../Models/Booking";
-import { EventModel,InterfaceEvent } from "../Models/Event";
+import { BookingModel, InterfaceBooking } from "../Models/Booking";
+import { EventModel, InterfaceEvent } from "../Models/Event";
 
 export const BookingRouter = Router();
 
-interface PopulatedBooking extends Omit<InterfaceBooking, 'event_id'> {
+interface PopulatedBooking extends Omit<InterfaceBooking, "event_id"> {
   event_id: InterfaceEvent;
 }
 
 BookingRouter.post(
   "/book",
   userMiddleware,
-  (req: Request, res: Response) => {},
+  async (req: Request, res: Response) => {
+    try {
+      if (!req.userId) {
+        return res.status(401).json({
+          msg: "Authentication content missing!",
+        });
+      }
+      const { eventId } = req.body;
+      const matchingEvent = await EventModel.findOne({
+        _id: eventId,
+        isDeleted:false
+      });
+      if (!matchingEvent) {
+        return res.status(400).json({
+          msg: "Event does not exist!!",
+        });
+      }
+      if (
+        matchingEvent.ticketDetails.total <= matchingEvent.ticketDetails.sold
+      ) {
+        return res.status(400).json({
+          msg: "No More Spots Left for the event!!",
+        });
+      }
+      const updateResult = await EventModel.updateOne(
+        {
+          _id: eventId,
+          "ticketDetails.sold": { $lt: matchingEvent.ticketDetails.total },
+        },
+        { $inc: { "ticketDetails.sold": 1 } },
+      );
+      if (updateResult.modifiedCount === 0) {
+        return res.status(400).json({
+          msg: "Event just filled up! Please try another event.",
+        });
+      }
+      const newBooking = await BookingModel.create({
+        user_id: req.userId,
+        event_id: matchingEvent._id,
+        checkedIn: false,
+      });
+      return res.json({
+        msg: "Event Booked successfully!!",
+        booking_id: newBooking._id,
+      });
+    } catch (e) {
+      return res.status(500).json({
+        msg: "Internal server error on ticket booking!!",
+      });
+    }
+  },
 );
 
 BookingRouter.get(
@@ -104,7 +154,9 @@ BookingRouter.post(
         return res.status(400).json({ msg: "Invalid Ticket format" });
       }
 
-      const booking = await BookingModel.findById(bookingId).populate("event_id") as unknown as PopulatedBooking;
+      const booking = (await BookingModel.findById(bookingId).populate(
+        "event_id",
+      )) as unknown as PopulatedBooking;
 
       if (!booking) {
         return res.status(404).json({
@@ -138,5 +190,5 @@ BookingRouter.post(
         msg: "Verification failed!!",
       });
     }
-  }
+  },
 );

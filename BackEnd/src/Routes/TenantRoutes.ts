@@ -4,7 +4,7 @@ import { userMiddleware } from "../Middleware/UserMiddleware";
 import { TenantMiddleware } from "../Middleware/TenantMiddleware";
 import { TenantModel } from "../Models/Tenant";
 
-const TenantRouter = Router();
+export const TenantRouter = Router();
 
 interface TenantUpdate {
   name?: string;
