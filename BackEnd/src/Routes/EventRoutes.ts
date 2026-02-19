@@ -137,7 +137,47 @@ EventRouter.get("/:id", async (req: Request, res: Response) => {
   }
 });
 
-EventRouter.get("/tenant/:tenantId", (req: Request, res: Response) => {});
+EventRouter.get("/tenant/:tenantId", async (req: Request, res: Response) => {
+  try {
+    const { tenantId } = req.params;
+    if (!Types.ObjectId.isValid(tenantId as string)) {
+      return res.status(400).json({ msg: "Invalid ID format" });
+    }
+    const page = Math.max(1, parseInt(req.query.page as string) || 1);
+    const limit = Math.max(
+      1,
+      Math.min(100, parseInt(req.query.limit as string) || 10),
+    );
+    const skip = (page - 1) * limit;
+    const queryId = new Types.ObjectId(tenantId as string);
+    const [TenantEvents, TotalTenantEvents] = await Promise.all([
+      EventModel.find({
+        tenantId: queryId,
+      })
+        .skip(skip)
+        .limit(limit),
+      EventModel.countDocuments({ tenantId: queryId }),
+    ]);
+    if (TenantEvents.length === 0) {
+      return res.status(404).json({
+        msg: "Tenant has no events!!",
+      });
+    }
+    return res.json({
+      TenantEvents,
+      pagination: {
+        TotalTenantEvents,
+        currentPage: page,
+        totalPages: Math.ceil(TotalTenantEvents / limit),
+      },
+      msg: "Event Details fetched successfully!!",
+    });
+  } catch (e) {
+    return res.status(500).json({
+      msg: "Internal server error during event fetch",
+    });
+  }
+});
 
 EventRouter.put(
   "/:id",
