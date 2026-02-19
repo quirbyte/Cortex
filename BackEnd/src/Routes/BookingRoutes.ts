@@ -8,7 +8,9 @@ export const BookingRouter = Router();
 BookingRouter.post(
   "/book",
   userMiddleware,
-  (req: Request, res: Response) => {},
+  (req: Request, res: Response) => {
+    
+  },
 );
 
 BookingRouter.get(

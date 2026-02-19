@@ -246,6 +246,8 @@ EventRouter.delete(
       const deletedEvent = await EventModel.findOneAndDelete({
         _id:queryId,
         tenantId:req.tenantId
+      },{
+        $set:{isDeleted:true}
       });
       if(!deletedEvent){
         return res.status(404).json({

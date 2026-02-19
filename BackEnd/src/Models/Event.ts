@@ -10,7 +10,8 @@ export interface InterfaceEvent extends Document{
         price:number,
         total:number,
         sold:number
-    }
+    },
+    isDeleted:boolean
 }
 
 const EventSchema = new Schema<InterfaceEvent>({
@@ -51,7 +52,12 @@ const EventSchema = new Schema<InterfaceEvent>({
             required:true,
             default:0,
         }
-    }
+    },
+    isDeleted: { 
+    type: Boolean, 
+    default: false, 
+    index: true
+  }
 },{timestamps:true})
 
 export const EventModel = model<InterfaceEvent>("Event",EventSchema);
