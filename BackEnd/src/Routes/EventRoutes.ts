@@ -231,5 +231,34 @@ EventRouter.delete(
   "/:id",
   userMiddleware,
   TenantMiddleware,
-  (req: Request, res: Response) => {},
+  async (req: Request, res: Response) => {
+    try{
+      if(!req.userId || !req.tenantId){
+        return res.status(401).json({
+          msg: "AUthentication/Tenant content missing!"
+        })
+      }
+      const EventFromReq = req.params.id;
+      if (!Types.ObjectId.isValid(EventFromReq as string)) {
+        return res.status(400).json({ msg: "Invalid ID format" });
+      }
+      const queryId = new Types.ObjectId(EventFromReq as string);
+      const deletedEvent = await EventModel.findOneAndDelete({
+        _id:queryId,
+        tenantId:req.tenantId
+      });
+      if(!deletedEvent){
+        return res.status(404).json({
+          msg: "Event not found!!"
+        })
+      }
+      return res.json({
+        msg: "Event deleted successfully!!"
+      })
+    }catch(e){
+      return res.status(500).json({
+        msg: "Internal server error during event deletion"
+      })
+    }
+  },
 );
