@@ -2,10 +2,14 @@ import { Router, Request, Response } from "express";
 import { Types } from "mongoose";
 import { userMiddleware } from "../Middleware/UserMiddleware";
 import { TenantMiddleware } from "../Middleware/TenantMiddleware";
-import { BookingModel } from "../Models/Booking";
-import { EventModel } from "../Models/Event";
+import { BookingModel,InterfaceBooking } from "../Models/Booking";
+import { EventModel,InterfaceEvent } from "../Models/Event";
 
 export const BookingRouter = Router();
+
+interface PopulatedBooking extends Omit<InterfaceBooking, 'event_id'> {
+  event_id: InterfaceEvent;
+}
 
 BookingRouter.post(
   "/book",
@@ -85,6 +89,54 @@ BookingRouter.get(
 
 BookingRouter.post(
   "/verify",
+  userMiddleware,
   TenantMiddleware,
-  (req: Request, res: Response) => {},
+  async (req: Request, res: Response) => {
+    try {
+      if (!req.userId || !req.tenantId) {
+        return res.status(401).json({
+          msg: "Authentication/Tenant content missing!",
+        });
+      }
+
+      const { bookingId } = req.body;
+      if (!Types.ObjectId.isValid(bookingId)) {
+        return res.status(400).json({ msg: "Invalid Ticket format" });
+      }
+
+      const booking = await BookingModel.findById(bookingId).populate("event_id") as unknown as PopulatedBooking;
+
+      if (!booking) {
+        return res.status(404).json({
+          msg: "Ticket not found!!",
+        });
+      }
+
+      const event = booking.event_id;
+
+      if (event.tenantId.toString() !== req.tenantId.toString()) {
+        return res.status(403).json({
+          msg: "Ticket not of this event!!",
+        });
+      }
+
+      if (booking.checkedIn) {
+        return res.status(400).json({
+          msg: "ALREADY USED: This ticket was scanned earlier!",
+        });
+      }
+
+      booking.checkedIn = true;
+      await booking.save();
+
+      return res.json({
+        msg: "ACCESS GRANTED!!",
+        attendee: booking.user_id,
+      });
+    } catch (e) {
+      return res.status(500).json({
+        msg: "Verification failed!!",
+      });
+    }
+  }
 );
