@@ -3,6 +3,7 @@ import { TenantMiddleware } from "../Middleware/TenantMiddleware";
 import { EventModel } from "../Models/Event";
 import { userMiddleware } from "../Middleware/UserMiddleware";
 import z from "zod";
+import { Types } from "mongoose";
 
 export const EventRouter = Router();
 
@@ -110,7 +111,31 @@ EventRouter.get("/", async (req: Request, res: Response) => {
   }
 });
 
-EventRouter.get("/:id", (req: Request, res: Response) => {});
+EventRouter.get("/:id", async (req: Request, res: Response) => {
+  try {
+    const eventIdFromParams = req.params.id;
+    if (!Types.ObjectId.isValid(eventIdFromParams as string)) {
+      return res.status(400).json({ msg: "Invalid ID format" });
+    }
+    const queryId = new Types.ObjectId(eventIdFromParams as string);
+    const eventDetails = await EventModel.findOne({
+      _id: queryId,
+    }).select("-tenantId");
+    if (!eventDetails) {
+      return res.status(404).json({
+        msg: "Event not found!!",
+      });
+    }
+    return res.json({
+      eventDetails,
+      msg: "Event Details fetched successfully!!",
+    });
+  } catch (e) {
+    return res.status(500).json({
+      msg: "Internal server error during event fetch",
+    });
+  }
+});
 
 EventRouter.get("/tenant/:tenantId", (req: Request, res: Response) => {});
 
