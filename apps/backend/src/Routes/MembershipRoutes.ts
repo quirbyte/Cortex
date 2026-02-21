@@ -1,0 +1,149 @@
+import { Router, Request, Response } from "express";
+import { authorize } from "src/Middleware/RoleMiddleware";
+import { TenantMiddleware } from "src/Middleware/TenantMiddleware";
+import { userMiddleware } from "src/Middleware/UserMiddleware";
+import { MembershipModel } from "src/Models/Membership";
+import { UserModel } from "src/Models/User";
+
+export const MembershipRouter = Router();
+
+MembershipRouter.post(
+  "/add",
+  userMiddleware,
+  TenantMiddleware,
+  authorize(["admin"]),
+  async (req: Request, res: Response) => {
+    try {
+      if (!req.userId || !req.tenantId) {
+        return res.status(401).json({
+          msg: "Authentication/Tenant context missing",
+        });
+      }
+      const { email, role } = req.body;
+      const getUser = await UserModel.findOne({
+        email: email,
+      });
+      if (!getUser) {
+        return res.status(404).json({
+          msg: "User not found!!",
+        });
+      }
+      const userId = getUser._id;
+      const existing = await MembershipModel.findOne({
+        userId,
+        tenantId: req.tenantId,
+      });
+      if (existing)
+        return res.status(400).json({ msg: "User is already a member!" });
+      const newMembership = await MembershipModel.create({
+        userId: userId,
+        tenantId: req.tenantId,
+        role: role,
+      });
+      return res.json({
+        msg: "Member added successfully",
+        memberId: newMembership._id,
+      });
+    } catch (e) {
+      return res.status(500).json({
+        msg: "Internal server error on adding members!",
+      });
+    }
+  },
+);
+
+MembershipRouter.get(
+  "/getAllMembers",
+  userMiddleware,
+  TenantMiddleware,
+  authorize(["admin"]),
+  async (req: Request, res: Response) => {
+    try {
+      if (!req.userId || !req.tenantId) {
+        return res.status(401).json({
+          msg: "Authentication/Tenant context missing",
+        });
+      }
+      const getAllMembers = await MembershipModel.find({
+        tenantId: req.tenantId,
+      })
+        .populate({ path: "userId", select: "name email" })
+        .select("-_id");
+      return res.json({
+        getAllMembers,
+        msg: "All members fetched successfully!",
+      });
+    } catch (e) {
+      return res.status(500).json({
+        msg: "Internal server error on adding members!",
+      });
+    }
+  },
+);
+
+MembershipRouter.delete(
+  "/remove",
+  userMiddleware,
+  TenantMiddleware,
+  authorize(["admin"]),
+  async (req: Request, res: Response) => {
+    try {
+      if (!req.userId || !req.tenantId) {
+        return res.status(401).json({
+          msg: "Authentication/Tenant context missing",
+        });
+      }
+      const { id } = req.body;
+      const deletedMembership = await MembershipModel.findOneAndDelete({
+        userId: id,
+        tenantId: req.tenantId,
+      });
+      if (!deletedMembership) {
+        return res
+          .status(404)
+          .json({ msg: "Member not found in this organization" });
+      }
+      return res.json({
+        msg: "Membership deleted successfully!!",
+      });
+    } catch (e) {
+      return res.status(500).json({
+        msg: "Internal server error on adding members!",
+      });
+    }
+  },
+);
+
+MembershipRouter.get(
+  "/my-organizations",
+  userMiddleware,
+  async (req: Request, res: Response) => {
+    try {
+      if (!req.userId) {
+        return res.status(404).json({
+          msg: "User not verified!!",
+        });
+      }
+      const userOrgs = await MembershipModel.find({
+        userId: req.userId,
+      })
+        .populate({ path: "tenantId", select: "name slug" })
+        .sort({ createdAt: -1 });
+
+      const formattedOrgs = userOrgs.map((membership) => ({
+        membershipId: membership._id,
+        role: membership.role,
+        tenant: membership.tenantId,
+      }));
+
+      return res.json({
+        userOrgs: formattedOrgs,
+        msg: "Fetched User Org Details successfully",
+      });
+    } catch (e) {
+      return res.status(500).json({
+        msg: "Failed to Fetch Org Details..",
+      });
+    }
+  },
+);

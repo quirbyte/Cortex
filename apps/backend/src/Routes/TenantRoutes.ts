@@ -59,32 +59,7 @@ TenantRouter.post(
   },
 );
 
-TenantRouter.get(
-  "/my-organizations",
-  userMiddleware,
-  async (req: Request, res: Response) => {
-    try {
-      if (!req.userId) {
-        return res.status(404).json({
-          msg: "User not verified!!",
-        });
-      }
-      const userOrgs = await MembershipModel.find({
-        userId: req.userId,
-      })
-        .populate({ path: "tenantId", select: "name" })
-        .sort({ createdAt: -1 });
-      return res.json({
-        userOrgs,
-        msg: "Fetched User Org Details successfully",
-      });
-    } catch (e) {
-      return res.status(500).json({
-        msg: "Failed to Fetch Org Details..",
-      });
-    }
-  },
-);
+
 
 TenantRouter.get("/:slug", async (req: Request, res: Response) => {
   try {
