@@ -99,6 +99,7 @@ BookingRouter.get(
   "/event/:eventId",
   userMiddleware,
   TenantMiddleware,
+  authorize(["admin", "moderator", "volunteer"]),
   async (req: Request, res: Response) => {
     try {
       if (!req.userId || !req.tenantId) {
@@ -141,7 +142,7 @@ BookingRouter.get(
 BookingRouter.post(
   "/verify",
   userMiddleware,
-  TenantMiddleware,authorize(["admin"]),
+  TenantMiddleware,authorize(["admin", "moderator", "volunteer"]),
   async (req: Request, res: Response) => {
     try {
       if (!req.userId || !req.tenantId) {

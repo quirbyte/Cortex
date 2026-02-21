@@ -4,7 +4,6 @@ import { userMiddleware } from "../Middleware/UserMiddleware";
 import { TenantMiddleware } from "../Middleware/TenantMiddleware";
 import { TenantModel } from "../Models/Tenant";
 import { authorize } from "../Middleware/RoleMiddleware";
-import { UserModel } from "../Models/User";
 import { MembershipModel } from "../Models/Membership";
 
 export const TenantRouter = Router();
@@ -40,7 +39,6 @@ TenantRouter.post(
       const newTenant = await TenantModel.create({
         name: name,
         slug: slug,
-        userId: req.userId,
       });
 
       await MembershipModel.create({
@@ -51,6 +49,7 @@ TenantRouter.post(
 
       return res.json({
         msg: "Created Tenant successfully!!",
+        tenantId: newTenant._id,
       });
     } catch (e) {
       return res.status(500).json({
@@ -70,9 +69,11 @@ TenantRouter.get(
           msg: "User not verified!!",
         });
       }
-      const userOrgs = await TenantModel.find({
+      const userOrgs = await MembershipModel.find({
         userId: req.userId,
-      }).sort({ createdAt: -1 });
+      })
+        .populate({ path: "tenantId", select: "name" })
+        .sort({ createdAt: -1 });
       return res.json({
         userOrgs,
         msg: "Fetched User Org Details successfully",
@@ -111,7 +112,7 @@ TenantRouter.put(
   "/update/:id",
   userMiddleware,
   TenantMiddleware,
-  authorize(["admin"]),
+  authorize(["admin", "moderator"]),
   async (req: Request, res: Response) => {
     try {
       if (!req.tenantId || !req.userId) {
@@ -149,7 +150,6 @@ TenantRouter.put(
       const result = await TenantModel.updateOne(
         {
           _id: queryId,
-          userId: req.userId,
         },
         {
           $set: updatedData,
@@ -172,10 +172,48 @@ TenantRouter.put(
   },
 );
 
-TenantRouter.get("/public/:slug", async (req, res) => {
-  const tenant = await TenantModel.findOne({ slug: req.params.slug }).select(
-    "name slug",
-  );
-  if (!tenant) return res.status(404).json({ msg: "Tenant not found" });
-  res.json(tenant);
+TenantRouter.get("/public/:slug", async (req: Request, res: Response) => {
+  try {
+    const tenant = await TenantModel.findOne({
+      slug: req.params.slug as string,
+    }).select("name slug");
+    if (!tenant) return res.status(404).json({ msg: "Tenant not found" });
+    return res.json(tenant);
+  } catch (e) {
+    return res.status(500).json({ msg: "Error fetching public tenant info" });
+  }
 });
+
+TenantRouter.delete(
+  "/delete/:id",
+  userMiddleware,
+  TenantMiddleware,
+  authorize(["admin"]),
+  async (req: Request, res: Response) => {
+    try {
+      if (!req.tenantId || !req.userId) {
+        return res.status(404).json({
+          msg: "User not verified!!",
+        });
+      }
+      const TenantFromReq = req.params.id;
+      if (!Types.ObjectId.isValid(TenantFromReq as string)) {
+        return res.status(400).json({ msg: "Invalid ID format" });
+      }
+      const queryId = new Types.ObjectId(TenantFromReq as string);
+      await TenantModel.deleteOne({
+        _id: queryId,
+      });
+      await MembershipModel.deleteMany({
+        tenantId: queryId,
+      });
+      return res.json({
+        msg: "Tenant deleted successfully!!",
+      });
+    } catch (e) {
+      return res.status(500).json({
+        msg: "Failed to Delete Tenant..",
+      });
+    }
+  },
+);

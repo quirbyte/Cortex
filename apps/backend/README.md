@@ -9,7 +9,9 @@ Future Features
 6. QR Code Implementation: Deciding whether to generate the QR on the frontend (browser-side) or    
    backend.
 
------------------------------------------------------------------------------------------------------
+7. i should just get the role from the user and make a men with buttons to enable or diable certian permissions om the tenant side
+
+----------------------------------------------------------------------------------------------------
 
 🚀 The "Core" SaaS Features (Your Current Plan)
 These are the foundational "Big Wins" we’ve discussed.

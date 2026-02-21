@@ -16,10 +16,9 @@ export const authorize = (roles: string[]) => {
 
       if (!membership || !roles.includes(membership.role)) {
         return res.status(403).json({
-          msg: "Access Denied: You are not an admin of this organization.",
+          msg: "Access Denied: You do not have a valid account verified by this organization.",
         });
       }
-
       next();
     } catch (e) {
       res.status(500).json({ msg: "Error checking permissions" });
