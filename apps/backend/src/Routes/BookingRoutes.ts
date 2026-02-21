@@ -4,6 +4,7 @@ import { userMiddleware } from "../Middleware/UserMiddleware";
 import { TenantMiddleware } from "../Middleware/TenantMiddleware";
 import { BookingModel, InterfaceBooking } from "../Models/Booking";
 import { EventModel, InterfaceEvent } from "../Models/Event";
+import { authorize } from "../Middleware/RoleMiddleware";
 
 export const BookingRouter = Router();
 
@@ -140,7 +141,7 @@ BookingRouter.get(
 BookingRouter.post(
   "/verify",
   userMiddleware,
-  TenantMiddleware,
+  TenantMiddleware,authorize(["admin"]),
   async (req: Request, res: Response) => {
     try {
       if (!req.userId || !req.tenantId) {

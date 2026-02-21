@@ -22,7 +22,8 @@ const EventSchema = new Schema<InterfaceEvent>({
     tenantId:{
         type:Schema.Types.ObjectId,
         ref:"Tenant",
-        required:true
+        required:true,
+        index:true
     },
     date:{
         type:Date,

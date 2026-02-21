@@ -3,6 +3,8 @@ import { Types } from "mongoose";
 import { userMiddleware } from "../Middleware/UserMiddleware";
 import { TenantMiddleware } from "../Middleware/TenantMiddleware";
 import { TenantModel } from "../Models/Tenant";
+import { authorize } from "../Middleware/RoleMiddleware";
+import { UserModel } from "../Models/User";
 
 export const TenantRouter = Router();
 
@@ -34,11 +36,17 @@ TenantRouter.post(
           msg: "Slug already exists!!",
         });
       }
-      await TenantModel.create({
+      const newTenant = await TenantModel.create({
         name: name,
         slug: slug,
         userId: req.userId,
       });
+
+      await UserModel.updateOne(
+        { _id: req.userId },
+        { $set: { role: "admin" } },
+      );
+
       return res.json({
         msg: "Created Tenant successfully!!",
       });
@@ -101,6 +109,7 @@ TenantRouter.put(
   "/update/:id",
   userMiddleware,
   TenantMiddleware,
+  authorize(["admin"]),
   async (req: Request, res: Response) => {
     try {
       if (!req.tenantId || !req.userId) {
@@ -160,3 +169,11 @@ TenantRouter.put(
     }
   },
 );
+
+TenantRouter.get("/public/:slug", async (req, res) => {
+  const tenant = await TenantModel.findOne({ slug: req.params.slug }).select(
+    "name slug",
+  );
+  if (!tenant) return res.status(404).json({ msg: "Tenant not found" });
+  res.json(tenant);
+});

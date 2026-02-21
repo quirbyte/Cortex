@@ -1,31 +1,29 @@
-import { Request,Response } from "express";
+import { Request, Response } from "express";
 import { TenantModel } from "../Models/Tenant";
 
-export async function TenantMiddleware(req:Request,res:Response,next:Function){
-    const tenantId = req.headers["tenant-id"] as string;
-    if(!tenantId){
-        return res.status(404).json({
-            msg: "Tenant Id not found!!"
-        })
+export async function TenantMiddleware(
+  req: Request,
+  res: Response,
+  next: Function,
+) {
+  const tenantSlug = req.headers["tenant-slug"] as string;
+  if (!tenantSlug) {
+    return res.status(404).json({
+      msg: "Tenant Context not found!!",
+    });
+  }
+  try {
+    const tenant = await TenantModel.findOne({
+      slug: tenantSlug.toLowerCase(),
+    });
+
+    if (!tenant) {
+      return res.status(404).json({ msg: "Tenant not found!!" });
     }
-    try{
-        if (!req.userId) {
-            return res.status(401).json({ msg: "User context missing" });
-        }
-        const tenant = await TenantModel.findOne({
-            _id:tenantId,
-            userId:req.userId
-        });
-        if(!tenant){
-            return res.status(404).json({
-                msg: "Tenant not found!!"
-            })
-        }
-        req.tenantId=tenant._id;
-        next();
-    }catch(e){
-        return res.status(403).json({
-            msg:"Invalid Tenant Id"
-        })
-    }
+
+    req.tenantId = tenant._id;
+    next();
+  } catch (e) {
+    return res.status(403).json({ msg: "Invalid Tenant context" });
+  }
 }

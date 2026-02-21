@@ -11,11 +11,13 @@ const BookingSchema = new Schema<InterfaceBooking>({
     type: Schema.Types.ObjectId,
     ref: "User",
     required: true,
+    index:true
   },
   event_id: {
     type: Schema.Types.ObjectId,
     ref:"Event",
     required: true,
+    index:true
   },
   checkedIn:{
     type:Boolean,
