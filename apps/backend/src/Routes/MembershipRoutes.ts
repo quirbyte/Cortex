@@ -1,9 +1,9 @@
 import { Router, Request, Response } from "express";
-import { authorize } from "src/Middleware/RoleMiddleware";
-import { TenantMiddleware } from "src/Middleware/TenantMiddleware";
-import { userMiddleware } from "src/Middleware/UserMiddleware";
-import { MembershipModel } from "src/Models/Membership";
-import { UserModel } from "src/Models/User";
+import { authorize } from "../Middleware/RoleMiddleware";
+import { TenantMiddleware } from "../Middleware/TenantMiddleware";
+import { userMiddleware } from "../Middleware/UserMiddleware";
+import { MembershipModel } from "../Models/Membership";
+import { UserModel } from "../Models/User";
 
 export const MembershipRouter = Router();
 

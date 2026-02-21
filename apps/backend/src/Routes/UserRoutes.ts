@@ -17,7 +17,7 @@ interface UserUpdate {
 
 UserRouter.post("/signup", async (req: Request, res: Response) => {
   const requiredBody = z.object({
-    username: z.string().min(5).max(20),
+    username: z.string().min(3).max(20),
     email: z.string().email().min(10),
     password: z.string().min(6),
   });
@@ -80,6 +80,11 @@ UserRouter.post("/signin", async (req: Request, res: Response) => {
     );
     return res.json({
       token,
+      user: {
+        id: user._id,
+        email: user.email,
+        name: user.name,
+      },
       msg: "You have been signed in successfully!!",
     });
   } catch (e) {
@@ -89,24 +94,24 @@ UserRouter.post("/signin", async (req: Request, res: Response) => {
   }
 });
 
-UserRouter.get("/me", userMiddleware,async (req: Request, res: Response) => {
-  try{
-    if(!req.userId){
+UserRouter.get("/me", userMiddleware, async (req: Request, res: Response) => {
+  try {
+    if (!req.userId) {
       return res.status(404).json({
-        msg: "Unauthorized User!"
+        msg: "Unauthorized User!",
       });
     }
     const user = await UserModel.findOne({
-      _id:req.userId
+      _id: req.userId,
     }).select("-password");
     return res.json({
       user,
-      msg: "Fetched User Details successfully!!"
-    })
-  }catch(e){
+      msg: "Fetched User Details successfully!!",
+    });
+  } catch (e) {
     return res.status(500).json({
-      msg: "Failed to Find User Data!!"
-    })
+      msg: "Failed to Find User Data!!",
+    });
   }
 });
 
