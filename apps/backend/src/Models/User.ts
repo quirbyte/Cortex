@@ -4,7 +4,6 @@ export interface InterfaceUser extends Document {
   name: string;
   email: string;
   password: string;
-  role: "admin" | "user";
 }
 
 const UserSchema = new Schema<InterfaceUser>(
@@ -21,11 +20,6 @@ const UserSchema = new Schema<InterfaceUser>(
     password: {
       type: String,
       required: true,
-    },
-    role: {
-      type: String,
-      enum: ["admin", "user"],
-      default: "user",
     },
   },
   { timestamps: true },

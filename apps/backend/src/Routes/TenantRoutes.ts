@@ -5,6 +5,7 @@ import { TenantMiddleware } from "../Middleware/TenantMiddleware";
 import { TenantModel } from "../Models/Tenant";
 import { authorize } from "../Middleware/RoleMiddleware";
 import { UserModel } from "../Models/User";
+import { MembershipModel } from "../Models/Membership";
 
 export const TenantRouter = Router();
 
@@ -42,10 +43,11 @@ TenantRouter.post(
         userId: req.userId,
       });
 
-      await UserModel.updateOne(
-        { _id: req.userId },
-        { $set: { role: "admin" } },
-      );
+      await MembershipModel.create({
+        userId: req.userId,
+        tenantId: newTenant._id,
+        role: "admin",
+      });
 
       return res.json({
         msg: "Created Tenant successfully!!",

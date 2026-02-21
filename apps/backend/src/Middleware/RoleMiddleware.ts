@@ -1,15 +1,28 @@
-import { Request, Response, NextFunction } from "express";
-import { UserModel } from "../Models/User";
+import { MembershipModel } from "../Models/Membership";
+import { Request, Response } from "express";
 
 export const authorize = (roles: string[]) => {
-  return async (req: Request, res: Response, next: NextFunction) => {
-    const user = await UserModel.findById(req.userId);
-
-    if (!user || !roles.includes(user.role)) {
-      return res.status(403).json({
-        msg: "Access Denied: You don't have the required permissions.",
+  return async (req: Request, res: Response, next: Function) => {
+    try {
+      if (!req.userId || !req.tenantId) {
+        return res.status(401).json({
+          msg: "Authentication or Tenant context missing.",
+        });
+      }
+      const membership = await MembershipModel.findOne({
+        userId: req.userId,
+        tenantId: req.tenantId,
       });
+
+      if (!membership || !roles.includes(membership.role)) {
+        return res.status(403).json({
+          msg: "Access Denied: You are not an admin of this organization.",
+        });
+      }
+
+      next();
+    } catch (e) {
+      res.status(500).json({ msg: "Error checking permissions" });
     }
-    next();
   };
 };
