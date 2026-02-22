@@ -2,21 +2,20 @@ import { useState } from "react";
 import { LoginForm } from "./components/LoginForm";
 import { SignupForm } from "./components/SignupForm";
 
-
 export function AuthPage() {
   const [currentPage, setCurrentPage] = useState("signup");
 
   return (
-    <div className="container h-screen w-screen flex bg-black">
-      <div className="imgContainer w-[50vw]">
+    <div className="flex h-screen w-full bg-black">
+      <div className="hidden md:block md:w-1/2 h-full">
         <img
-          className="h-screen w-full opacity-35"
+          className="h-full w-full object-cover opacity-35"
           src="/authSplit.jpg"
           alt="img"
         />
       </div>
 
-      <div className="formContainer h-screen w-[50vw] flex items-center justify-center">
+      <div className="w-full md:w-1/2 h-full flex items-center justify-center p-6">
         {currentPage === "login" ? (
           <LoginForm switchPage={() => setCurrentPage("signup")} />
         ) : (
