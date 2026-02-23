@@ -48,7 +48,7 @@ export default function LoginPage() {
   };
   return (
     <>
-      <Card className="bg-zinc-950 border-none relative w-[70%] p-2">
+      <Card className="bg-zinc-950 border-none relative w-[70%] px-1 py-8">
         <CardHeader>
           <CardTitle className="text-white tracking-tighter text-2xl text-center">
             Welcome to Cortex

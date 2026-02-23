@@ -50,7 +50,7 @@ export default function SignupPage() {
   return (
     <>
       <>
-        <Card className="bg-zinc-950 border-none relative w-[70%] p-2">
+        <Card className="bg-zinc-950 border-none relative w-[70%] px-1 py-8">
           <CardHeader>
             <CardTitle className="text-white tracking-tighter text-2xl text-center">
               Welcome to Cortex
@@ -103,7 +103,7 @@ export default function SignupPage() {
                     className="w-full rounded-xl bg-white text-black cursor-pointer hover:bg-zinc-200"
                     onClick={handleSubmit}
                   >
-                    {loading === false ? "Login" : <Spinner />}
+                    {loading === false ? "Signup" : <Spinner />}
                   </Button>
                   <Link
                     to="/login"
