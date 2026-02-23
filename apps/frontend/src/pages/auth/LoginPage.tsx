@@ -34,13 +34,15 @@ export default function LoginPage() {
         password: passwd,
       });
       localStorage.setItem("token", data.token);
+      localStorage.setItem("username",data.user.name);
+      localStorage.setItem("email",data.user.email);
       setSuccess(true);
       setTimeout(() => {
         setSuccess(false);
         navigate("/dashboard");
       }, 3000);
     } catch (err: any) {
-      setError(err?.response?.data?.message || err.message);
+      setError(err?.response?.data?.msg || err.message);
       setTimeout(() => setError(false), 3000);
     } finally {
       setLoading(false);

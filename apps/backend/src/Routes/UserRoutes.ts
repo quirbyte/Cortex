@@ -1,4 +1,5 @@
 import { Router, Request, Response } from "express";
+import mongoose from "mongoose";
 import dotenv from "dotenv";
 dotenv.config();
 import bcrypt from "bcrypt";
@@ -6,6 +7,8 @@ import z from "zod";
 import jwt from "jsonwebtoken";
 import { UserModel } from "../Models/User";
 import { userMiddleware } from "../Middleware/UserMiddleware";
+import { MembershipModel } from "../Models/Membership";
+import { BookingModel } from "../Models/Booking";
 
 export const UserRouter = Router();
 
@@ -115,49 +118,82 @@ UserRouter.get("/me", userMiddleware, async (req: Request, res: Response) => {
   }
 });
 
-UserRouter.put(
-  "/update",
+UserRouter.put("/update", userMiddleware, async (req, res) => {
+  try {
+    if (!req.userId) {
+      return res.status(401).json({ msg: "User not verified!" });
+    }
+
+    const { name, email, password } = req.body;
+    const updatedData: any = {};
+
+    if (name?.trim()) updatedData.name = name;
+    if (email?.trim()) updatedData.email = email;
+    if (password?.trim()) {
+      updatedData.password = await bcrypt.hash(password, 10);
+    }
+
+    if (!Object.keys(updatedData).length) {
+      return res.status(400).json({ msg: "Nothing to update!" });
+    }
+
+    await UserModel.updateOne({ _id: req.userId }, { $set: updatedData });
+
+    const updatedUser = await UserModel.findById(req.userId).select(
+      "name email",
+    );
+
+    return res.json({
+      user: updatedUser,
+      msg: "Data Updated Successfully!",
+    });
+  } catch (e) {
+    return res.status(500).json({ msg: "Failed to update data!" });
+  }
+});
+UserRouter.delete(
+  "/delete",
   userMiddleware,
   async (req: Request, res: Response) => {
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
     try {
-      if (!req.userId) {
-        return res.status(404).json({
-          msg: "User not verified!!",
-        });
+      const userId = req.userId;
+
+      if (!userId) {
+        return res.status(404).json({ msg: "User not verified!!" });
       }
-      const { updatedName, updatedEmail, updatedPasswd } = req.body;
-      const updatedData: UserUpdate = {};
-      if (updatedName && updatedName.trim() !== "") {
-        updatedData.name = updatedName;
-      }
-      if (updatedEmail && updatedEmail.trim() !== "") {
-        updatedData.email = updatedEmail;
-      }
-      if (updatedPasswd && updatedPasswd.trim() !== "") {
-        const hashed_pw = await bcrypt.hash(updatedPasswd, 10);
-        updatedData.password = hashed_pw;
-      }
-      if (Object.keys(updatedData).length > 0) {
-        await UserModel.updateOne(
-          {
-            _id: req.userId,
-          },
-          {
-            $set: updatedData,
-          },
-        );
-        return res.json({
-          msg: "Data Updated Successfully!!",
-        });
-      } else {
-        return res.status(404).json({
-          msg: "Nothing to update!!",
-        });
-      }
-    } catch (e) {
-      return res.status(500).json({
-        msg: "Failed to Update data!!",
+
+      const personalMemberships = await MembershipModel.find({
+        userId,
+        role: "admin",
       });
+
+      for (const membership of personalMemberships) {
+        const adminCount = await MembershipModel.countDocuments({
+          tenantId: membership.tenantId,
+          role: "admin",
+        });
+
+        if (adminCount <= 1) {
+          await session.abortTransaction();
+          return res.status(400).json({
+            msg: "Cannot delete account. You are the sole admin of one or more organizations.",
+          });
+        }
+      }
+      await UserModel.deleteOne({ _id: userId }).session(session);
+      await MembershipModel.deleteMany({ userId }).session(session);
+      await BookingModel.deleteMany({ user_id: userId }).session(session);
+
+      await session.commitTransaction();
+      return res.json({ msg: "Account deleted successfully" });
+    } catch (e) {
+      await session.abortTransaction();
+      return res.status(500).json({ msg: "Failed to delete account" });
+    } finally {
+      session.endSession();
     }
   },
 );
