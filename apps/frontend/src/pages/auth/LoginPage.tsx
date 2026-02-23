@@ -61,23 +61,25 @@ export default function LoginPage() {
           <form action="">
             <div className="flex flex-col gap-7">
               <div className="flex flex-col gap-2">
-                <Label className="text-white" htmlFor="username">
+                <Label className="text-white" htmlFor="email">
                   Email:
                 </Label>
                 <Input
                   type="email"
                   className="border-[0.5px] border-none bg-zinc-900 cursor-default rounded-xl"
                   placeholder="name@example.com"
+                  value={email}
                   onChange={(e) => setEmail(e.target.value)}
                 ></Input>
               </div>
               <div className="flex flex-col gap-2">
-                <Label className="text-white" htmlFor="username">
+                <Label className="text-white" htmlFor="password">
                   Password:
                 </Label>
                 <Input
                   className="border-[0.5px] border-none cursor-default bg-zinc-900 rounded-xl"
                   placeholder="-------"
+                  value={passwd}
                   type="password"
                   onChange={(e) => setPasswd(e.target.value)}
                 ></Input>
