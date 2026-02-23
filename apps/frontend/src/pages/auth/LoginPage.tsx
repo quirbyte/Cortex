@@ -14,7 +14,7 @@ import { useState } from "react";
 import { Spinner } from "@/components/ui/spinner";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { CheckCircle2Icon, XCircleIcon } from "lucide-react";
-import axios from "axios";
+import apiClient from "@/api/apiClient";
 import type { loginResponse } from "./types";
 
 export default function LoginPage() {
@@ -29,7 +29,7 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      const { data } = await axios.post<loginResponse>("/api/v1/user/login", {
+      const { data } = await apiClient.post<loginResponse>("/user/login", {
         email,
         password: passwd,
       });

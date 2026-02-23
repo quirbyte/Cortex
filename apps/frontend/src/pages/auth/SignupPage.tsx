@@ -14,7 +14,7 @@ import { useState } from "react";
 import { Spinner } from "@/components/ui/spinner";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { CheckCircle2Icon, XCircleIcon } from "lucide-react";
-import axios from "axios";
+import apiClient from "@/api/apiClient";
 
 export default function SignupPage() {
   const [name, setName] = useState("");
@@ -30,7 +30,7 @@ export default function SignupPage() {
     setLoading(true);
     try {
       setLoading(true);
-      await axios.post("/api/v1/user/signup",{
+      await apiClient.post("/user/signup",{
         username:name,
         email,
         password:passwd
