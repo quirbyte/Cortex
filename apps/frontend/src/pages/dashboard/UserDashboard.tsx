@@ -1,9 +1,9 @@
-import UserDetails from "./UserDetails";
+import UserSettings from "./UserSettings";
 
 export default function UserDashboard() {
   return (
     <>
-      <UserDetails />
+      <UserSettings />
     </>
   );
 }

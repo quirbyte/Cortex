@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Particles } from "@/components/ui/particles";
 import { BorderBeam } from "@/components/ui/border-beam";
 import { Button } from "@/components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
@@ -34,8 +35,8 @@ export default function LoginPage() {
         password: passwd,
       });
       localStorage.setItem("token", data.token);
-      localStorage.setItem("username",data.user.name);
-      localStorage.setItem("email",data.user.email);
+      localStorage.setItem("username", data.user.name);
+      localStorage.setItem("email", data.user.email);
       setSuccess(true);
       setTimeout(() => {
         setSuccess(false);
@@ -43,19 +44,26 @@ export default function LoginPage() {
       }, 3000);
     } catch (err: any) {
       setError(err?.response?.data?.msg || err.message);
-      setTimeout(() => setError(false), 3000);
+      setTimeout(() => setError(false), 1500);
     } finally {
       setLoading(false);
     }
   };
   return (
-    <>
-      <Card className="bg-zinc-950 border-none relative w-[70%] px-1 py-8">
+    <div className="relative w-full h-full flex flex-col items-center justify-center overflow-hidden">
+      <Particles
+        className="absolute inset-0 z-0"
+        quantity={70}
+        ease={80}
+        color="#ffffff"
+        refresh
+      />
+      <Card className="bg-zinc-950 border-none relative w-[70%] z-10 px-1 py-8">
         <CardHeader>
           <CardTitle className="text-white tracking-tighter text-2xl text-center">
             Welcome to Cortex
           </CardTitle>
-          <CardDescription className="text-center text-xl">
+          <CardDescription className="text-center">
             Login to Cortex
           </CardDescription>
         </CardHeader>
@@ -122,6 +130,6 @@ export default function LoginPage() {
           </Alert>
         </div>
       )}
-    </>
+    </div>
   );
 }

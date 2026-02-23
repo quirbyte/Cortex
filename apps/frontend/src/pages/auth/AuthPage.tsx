@@ -3,7 +3,7 @@ import { Outlet } from "react-router-dom";
 export default function AuthPage() {
   return (
     <div className="flex h-screen w-full bg-black">
-      <div className="hidden md:block md:w-1/2 h-full">
+      <div className="hidden lg:block md:w-1/2 h-full">
         <img
           className="h-full w-full object-cover opacity-35"
           src="/authSplit.jpg"
@@ -11,7 +11,7 @@ export default function AuthPage() {
         />
       </div>
 
-      <div className="w-full md:w-1/2 h-full flex items-center justify-center p-6">
+      <div className="w-full lg:w-1/2 h-full flex items-center justify-center p-6">
         <Outlet />
       </div>
     </div>

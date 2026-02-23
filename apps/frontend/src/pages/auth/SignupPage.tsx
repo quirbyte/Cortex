@@ -5,6 +5,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Particles } from "@/components/ui/particles";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { BorderBeam } from "@/components/ui/border-beam";
@@ -39,7 +40,7 @@ export default function SignupPage() {
       setTimeout(() => {
         setSuccess(false);
         navigate("/login");
-      }, 3000);
+      }, 1500);
     } catch (err: any) {
       setError(err?.response?.data?.message || err.message);
       setTimeout(() => setError(false), 3000);
@@ -48,14 +49,20 @@ export default function SignupPage() {
     }
   };
   return (
-    <>
-      <>
-        <Card className="bg-zinc-950 border-none relative w-[70%] px-1 py-8">
+      <div className="relative w-full h-full flex flex-col items-center justify-center overflow-hidden">
+      <Particles
+              className="absolute inset-0 z-0"
+              quantity={70}
+              ease={80}
+              color="#ffffff"
+              refresh
+            />
+        <Card className="bg-zinc-950 border-none relative z-10 w-[70%] px-1 py-8">
           <CardHeader>
             <CardTitle className="text-white tracking-tighter text-2xl text-center">
               Welcome to Cortex
             </CardTitle>
-            <CardDescription className="text-center text-xl">
+            <CardDescription className="text-center">
               SignUp for Cortex
             </CardDescription>
           </CardHeader>
@@ -134,7 +141,6 @@ export default function SignupPage() {
             </Alert>
           </div>
         )}
-      </>
-    </>
+      </div>
   );
 }
