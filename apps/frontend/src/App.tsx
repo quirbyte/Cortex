@@ -1,23 +1,20 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { TenantProvider } from "@/features/core/TenantContext";
-import { AuthLayout } from "./features/auth/AuthLayout";
-import { LoginForm } from "./features/auth/components/LoginForm";
-import { SignupForm } from "./features/auth/components/SignupForm";
-import { UserPage } from "./features/userdashboard/userPage";
+import LoginPage from "./pages/auth/LoginPage";
+import SignupPage from "./pages/auth/SignupPage";
+import AuthPage from "./pages/auth/AuthPage";
+import UserDashboard from "./pages/dashboard/UserDashboard";
 
 export default function App() {
   return (
     <BrowserRouter>
-      <TenantProvider>
-        <Routes>
-          <Route element={<AuthLayout />}>
-            <Route path="/login" element={<LoginForm />} />
-            <Route path="/signup" element={<SignupForm />} />
-          </Route>
-          <Route path="/dashboard" element={<UserPage />} />
-          <Route path="/" element={<Navigate to="/login" />} />
-        </Routes>
-      </TenantProvider>
+      <Routes>
+        <Route element={<AuthPage />}>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/signup" element={<SignupPage />} />
+        </Route>
+        <Route path="/dashboard" element={<UserDashboard />} />
+        <Route path="/" element={<Navigate to="/login" />} />
+      </Routes>
     </BrowserRouter>
   );
 }
