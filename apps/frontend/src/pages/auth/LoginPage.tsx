@@ -66,7 +66,7 @@ export default function LoginPage() {
                 </Label>
                 <Input
                   type="email"
-                  className="border-[0.5px] border-none bg-zinc-900 cursor-default rounded-xl"
+                  className="border-[0.5px] border-none text-white bg-zinc-900 cursor-default rounded-xl"
                   placeholder="name@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -77,8 +77,8 @@ export default function LoginPage() {
                   Password:
                 </Label>
                 <Input
-                  className="border-[0.5px] border-none cursor-default bg-zinc-900 rounded-xl"
-                  placeholder="-------"
+                  className="text-white border-[0.5px] border-none cursor-default bg-zinc-900 rounded-xl"
+                  placeholder="••••••••"
                   value={passwd}
                   type="password"
                   onChange={(e) => setPasswd(e.target.value)}

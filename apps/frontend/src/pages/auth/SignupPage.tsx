@@ -69,7 +69,7 @@ export default function SignupPage() {
                   <Input
                     value={name}
                     type="text"
-                    className="border-[0.5px] border-none bg-zinc-900 cursor-default rounded-xl"
+                    className="text-white border-[0.5px] border-none bg-zinc-900 cursor-default rounded-xl"
                     placeholder="name"
                     onChange={(e) => setName(e.target.value)}
                   ></Input>
@@ -81,7 +81,7 @@ export default function SignupPage() {
                   <Input
                     value={email}
                     type="email"
-                    className="border-[0.5px] border-none bg-zinc-900 cursor-default rounded-xl"
+                    className="text-white border-[0.5px] border-none bg-zinc-900 cursor-default rounded-xl"
                     placeholder="name@example.com"
                     onChange={(e) => setEmail(e.target.value)}
                   ></Input>
@@ -92,8 +92,8 @@ export default function SignupPage() {
                   </Label>
                   <Input
                     value={passwd}
-                    className="border-[0.5px] border-none cursor-default bg-zinc-900 rounded-xl"
-                    placeholder="-------"
+                    className="text-white border-[0.5px] border-none cursor-default bg-zinc-900 rounded-xl"
+                    placeholder="••••••••"
                     type="password"
                     onChange={(e) => setPasswd(e.target.value)}
                   ></Input>

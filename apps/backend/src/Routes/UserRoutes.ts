@@ -47,7 +47,7 @@ UserRouter.post("/signup", async (req: Request, res: Response) => {
   }
 });
 
-UserRouter.post("/signin", async (req: Request, res: Response) => {
+UserRouter.post("/login", async (req: Request, res: Response) => {
   const requiredBody = z.object({
     email: z.string().email().min(10),
     password: z.string().min(6),
