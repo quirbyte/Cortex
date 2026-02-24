@@ -9,7 +9,6 @@ import {
 import { User2Icon, SunIcon, MoonIcon } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
 
 export default function AppSidebar() {
   const [userData, setUserData] = useState({
@@ -48,17 +47,32 @@ export default function AppSidebar() {
 
   return (
     <Sidebar className="border-r border-border">
-      <SidebarHeader className="bg-sidebar text-sidebar-foreground flex flex-row items-center justify-between font-bold p-4 text-3xl tracking-tighter">
-        <span>Cortex</span>
+      <SidebarHeader className="bg-sidebar text-sidebar-foreground flex flex-row items-center justify-between p-4 pb-2">
+        <span className="font-bold text-2xl tracking-tighter">Cortex</span>
+
         {state === "expanded" && (
-          <Button
-            variant="ghost"
-            size="icon"
+          <div
             onClick={toggleTheme}
-            className="h-8 w-8 text-sidebar-foreground"
+            className="relative flex items-center w-10 h-6 cursor-pointer group"
           >
-            {theme === "dark" ? <SunIcon size={18} /> : <MoonIcon size={18} />}
-          </Button>
+            <div className="absolute w-full h-0.5 bg-border group-hover:bg-muted-foreground/30 transition-colors" />
+
+            <div
+              className={`
+              absolute flex items-center justify-center transition-all duration-500 ease-in-out
+              ${theme === "dark" ? "translate-x-6" : "translate-x-0"}
+            `}
+            >
+              {theme === "dark" ? (
+                <MoonIcon
+                  size={14}
+                  className="text-primary drop-shadow-[0_0_5px_rgba(var(--primary),0.8)]"
+                />
+              ) : (
+                <SunIcon size={14} className="text-foreground" />
+              )}
+            </div>
+          </div>
         )}
       </SidebarHeader>
 
@@ -69,7 +83,7 @@ export default function AppSidebar() {
         className="bg-sidebar text-sidebar-foreground p-0 cursor-pointer"
       >
         <Card className="bg-sidebar border-border border-x-0 border-t rounded-t-sm rounded-b-none p-2 shadow-none">
-          <CardContent className="flex items-center gap-3 px-4">
+          <CardContent className="flex items-center gap-3 px-4 py-3">
             <div className="bg-sidebar-accent h-8 w-8 shrink-0 flex items-center justify-center rounded-full text-muted-foreground">
               <User2Icon size={18} />
             </div>
