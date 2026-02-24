@@ -48,7 +48,19 @@ export default function AppSidebar() {
   return (
     <Sidebar className="border-r border-border">
       <SidebarHeader className="bg-sidebar text-sidebar-foreground flex flex-row items-center justify-between p-4 pb-2">
-        <span className="font-bold text-2xl tracking-tighter">Cortex</span>
+        <div className="flex items-center gap-2.5">
+          <img 
+            src="/cortex.png" 
+            alt="Cortex Logo" 
+            style={{
+              filter: theme === "dark" 
+                ? "invert(100%) sepia(0%) saturate(0%) brightness(200%) contrast(100%)" 
+                : "none"
+            }}
+            className="h-7 w-7 object-contain transition-all duration-500"
+          />
+          <span className="font-bold text-2xl tracking-tighter">Cortex</span>
+        </div>
 
         {state === "expanded" && (
           <div

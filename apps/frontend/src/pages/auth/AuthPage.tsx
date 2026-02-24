@@ -26,7 +26,7 @@ export default function AuthPage() {
           onClick={toggleTheme}
           className="relative flex flex-col items-center h-12 w-6 cursor-pointer group"
         >
-          <div className="absolute h-full w-[1px] bg-border group-hover:bg-muted-foreground/30 transition-colors" />
+          <div className="absolute h-full w-px bg-border group-hover:bg-muted-foreground/30 transition-colors" />
           
           <div className={`
             absolute flex items-center justify-center transition-all duration-500 ease-in-out
@@ -46,7 +46,7 @@ export default function AuthPage() {
           className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-1000 ease-in-out ${
             theme === "dark" ? "opacity-60" : "opacity-0"
           }`}
-          src="/authSplitDark.jpg"
+          src="/authSplitDark.png"
           alt="Dark Visual"
         />
         
@@ -54,7 +54,7 @@ export default function AuthPage() {
           className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-1000 ease-in-out ${
             theme === "light" ? "opacity-60" : "opacity-0"
           }`}
-          src="/authSplitLight.jpg"
+          src="/authSplitLight.png"
           alt="Light Visual"
         />
       </div>
