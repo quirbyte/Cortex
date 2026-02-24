@@ -12,7 +12,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { CheckCircle2Icon, XCircleIcon, User2Icon } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Spinner } from "@/components/ui/spinner";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Label } from "@/components/ui/label";
 import {
   Dialog,
@@ -47,7 +47,23 @@ export default function UserSettings() {
   const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
-  const {state} = useSidebar();
+  const { state } = useSidebar();
+
+  const [isDark, setIsDark] = useState(true);
+
+  useEffect(() => {
+    const checkTheme = () => {
+      setIsDark(document.documentElement.classList.contains("dark"));
+    };
+    checkTheme();
+
+    const observer = new MutationObserver(checkTheme);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+    return () => observer.disconnect();
+  }, []);
 
   const triggerAlert = (message: string, type: "success" | "error") => {
     setAlert({ show: true, message, type });
@@ -102,39 +118,41 @@ export default function UserSettings() {
     } catch (err: any) {
       triggerAlert(
         err?.response?.data?.msg || "Problem in deleting account!",
-        "error",
+        "error"
       );
       setLoading(false);
     }
   };
 
   return (
-    <div className="relative h-full w-full bg-black overflow-hidden flex items-center justify-center">
+    <div className="relative h-full w-full bg-background overflow-hidden flex items-center justify-center">
       <div className="absolute inset-0 z-0">
-        <Particles key={`particles-${state}`}
+        <Particles
+          key={`particles-${state}-${isDark}`}
           className="h-full w-full"
           quantity={50}
           ease={80}
-          color="#ffffff"
+          color={isDark ? "#ffffff" : "#000000"}
         />
       </div>
 
-      <Card className="hover:scale-[1.01] transition-transform duration-300 z-50 text-white bg-zinc-900/40 backdrop-blur-xl border-zinc-800 w-96 relative overflow-hidden">
+      <Card className="hover:scale-[1.01] transition-transform duration-300 z-50 text-foreground bg-card/40 backdrop-blur-xl border-border w-96 relative overflow-hidden">
         <Button
+          variant="ghost"
           size="sm"
           onClick={handleLogout}
-          className="absolute top-2 right-2 z-20 text-zinc-400 hover:text-white hover:bg-red-800"
+          className="absolute top-2 right-2 z-20 text-muted-foreground hover:text-foreground hover:bg-accent"
         >
           {loading === false ? "Log out" : <Spinner />}
         </Button>
         <CardHeader>
           <CardTitle className="text-2xl tracking-tighter text-center flex flex-col gap-2 items-center justify-center">
-            <div className="img-div bg-black h-10 w-10 flex items-center justify-center rounded-full">
+            <div className="img-div bg-background h-10 w-10 flex items-center justify-center rounded-full border border-border">
               <User2Icon />
             </div>
             <div>Your Account</div>
           </CardTitle>
-          <CardDescription className="text-center">
+          <CardDescription className="text-center text-muted-foreground">
             View or edit account settings
           </CardDescription>
         </CardHeader>
@@ -142,28 +160,28 @@ export default function UserSettings() {
           <form action="" className="flex flex-col gap-5">
             <Label>
               <div className="underline">Username</div> :{" "}
-              <div className="text-zinc-400">
+              <div className="text-muted-foreground">
                 {localStorage.getItem("username")}{" "}
               </div>{" "}
             </Label>
             <Label>
               <div className="underline">Email</div> :{" "}
-              <div className="text-zinc-400">
+              <div className="text-muted-foreground">
                 {localStorage.getItem("email")}
               </div>{" "}
             </Label>
             <Dialog open={isOpen} onOpenChange={setIsOpen}>
               <DialogTrigger asChild>
-                <Button className="w-full rounded-xl bg-white text-black cursor-pointer hover:bg-zinc-200">
+                <Button className="w-full rounded-xl bg-primary text-primary-foreground cursor-pointer hover:opacity-90">
                   {loading === false ? "Edit your info" : <Spinner />}
                 </Button>
               </DialogTrigger>
-              <DialogContent className="backdrop-blur-xl bg-zinc-950 border-zinc-800 text-white">
+              <DialogContent className="backdrop-blur-xl bg-card border-border text-foreground">
                 <DialogHeader>
                   <DialogTitle className="text-center tracking-tighter text-2xl">
                     Edit Your Profile
                   </DialogTitle>
-                  <DialogDescription className="text-center">
+                  <DialogDescription className="text-center text-muted-foreground">
                     Make changes to your profile here
                   </DialogDescription>
                 </DialogHeader>
@@ -171,7 +189,7 @@ export default function UserSettings() {
                   <Field>
                     <FieldLabel>Username:</FieldLabel>
                     <Input
-                      className="rounded-xl border-zinc-800 bg-zinc-900/50"
+                      className="rounded-xl border-border bg-background"
                       type="text"
                       placeholder="Edited username"
                       defaultValue={userData.name}
@@ -183,7 +201,7 @@ export default function UserSettings() {
                   <Field>
                     <FieldLabel>Email:</FieldLabel>
                     <Input
-                      className="rounded-xl border-zinc-800 bg-zinc-900/50"
+                      className="rounded-xl border-border bg-background"
                       type="email"
                       placeholder="updatedemail@example.com"
                       defaultValue={userData.email}
@@ -195,7 +213,7 @@ export default function UserSettings() {
                   <Field>
                     <FieldLabel>New Password:</FieldLabel>
                     <Input
-                      className="rounded-xl border-zinc-800 bg-zinc-900/50"
+                      className="rounded-xl border-border bg-background"
                       type="password"
                       placeholder="Do not edit to keep unchanged"
                       onChange={(e) =>
@@ -213,7 +231,7 @@ export default function UserSettings() {
                   </DialogClose>
                   <Button
                     disabled={loading}
-                    className="bg-white text-black hover:text-white"
+                    className="bg-primary text-primary-foreground hover:opacity-90"
                     onClick={handleEdit}
                   >
                     {loading === false ? "Save Changes" : <Spinner />}
@@ -224,7 +242,8 @@ export default function UserSettings() {
             <div className="flex justify-between items-center tracking-tighter">
               <div>Delete your Account:</div>
               <Button
-                className="width-2 rounded-xl bg-red-700 text-white cursor-pointer hover:bg-zinc-800"
+                variant="destructive"
+                className="rounded-xl cursor-pointer hover:opacity-90"
                 disabled={loading}
                 onClick={handleDeleteAccount}
               >
@@ -236,8 +255,8 @@ export default function UserSettings() {
         <BorderBeam
           size={150}
           duration={10}
-          colorFrom="#4b5563"
-          colorTo="#ffffff"
+          colorFrom={isDark ? "#4b5563" : "#d1d5db"}
+          colorTo={isDark ? "#ffffff" : "#000000"}
         />
       </Card>
       {alert.show && (
