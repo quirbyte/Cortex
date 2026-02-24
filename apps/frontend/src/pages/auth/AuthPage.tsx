@@ -1,6 +1,5 @@
 import { Outlet } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
 import { SunIcon, MoonIcon } from "lucide-react";
 
 export default function AuthPage() {
@@ -22,15 +21,24 @@ export default function AuthPage() {
 
   return (
     <div className="flex h-screen w-full bg-background transition-colors duration-500 relative">
-      <div className="absolute top-4 right-4 z-50">
-        <Button
-          variant="ghost"
-          size="icon"
+      <div className="absolute top-8 right-8 z-50">
+        <div 
           onClick={toggleTheme}
-          className="rounded-full text-foreground hover:bg-accent"
+          className="relative flex flex-col items-center h-12 w-6 cursor-pointer group"
         >
-          {theme === "dark" ? <SunIcon size={20} /> : <MoonIcon size={20} />}
-        </Button>
+          <div className="absolute h-full w-[1px] bg-border group-hover:bg-muted-foreground/30 transition-colors" />
+          
+          <div className={`
+            absolute flex items-center justify-center transition-all duration-500 ease-in-out
+            ${theme === "dark" ? "translate-y-8" : "translate-y-0"}
+          `}>
+            {theme === "dark" ? (
+              <MoonIcon size={16} className="text-primary drop-shadow-[0_0_8px_rgba(var(--primary),0.8)]" />
+            ) : (
+              <SunIcon size={16} className="text-foreground" />
+            )}
+          </div>
+        </div>
       </div>
 
       <div className="hidden lg:block md:w-1/2 h-full relative overflow-hidden">
