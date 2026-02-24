@@ -11,7 +11,7 @@ export default function UserDashboard() {
     <div>
       <SidebarProvider className="bg-black h-screen w-screen overflow-hidden">
         <AppSidebar />
-        <SidebarInset>
+        <SidebarInset className="overflow-x-hidden flex-1">
           <header className="bg-black w-full h-7">
             <SidebarTrigger className="text-white" />
           </header>

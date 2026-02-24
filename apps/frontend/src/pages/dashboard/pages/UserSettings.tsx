@@ -27,6 +27,7 @@ import {
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import apiClient from "@/api/apiClient";
+import { useSidebar } from "@/components/ui/sidebar";
 
 export default function UserSettings() {
   const [alert, setAlert] = useState<{
@@ -46,6 +47,7 @@ export default function UserSettings() {
   const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
+  const {state} = useSidebar();
 
   const triggerAlert = (message: string, type: "success" | "error") => {
     setAlert({ show: true, message, type });
@@ -79,6 +81,7 @@ export default function UserSettings() {
       setUserData(updatedUser);
       localStorage.setItem("username", updatedUser.name);
       localStorage.setItem("email", updatedUser.email);
+      window.dispatchEvent(new Event("userDataUpdated"));
       triggerAlert("Info updated successfully", "success");
       setIsOpen(false);
     } catch (err) {
@@ -106,14 +109,13 @@ export default function UserSettings() {
   };
 
   return (
-    <div className="relative min-h-full w-full bg-black overflow-hidden flex items-center justify-center">
+    <div className="relative h-full w-full bg-black overflow-hidden flex items-center justify-center">
       <div className="absolute inset-0 z-0">
-        <Particles
+        <Particles key={`particles-${state}`}
           className="h-full w-full"
           quantity={50}
           ease={80}
           color="#ffffff"
-          refresh
         />
       </div>
 
