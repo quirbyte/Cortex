@@ -109,6 +109,7 @@ export default function SignupPage() {
                   <Button
                     className="w-full rounded-xl bg-white text-black cursor-pointer hover:bg-zinc-200"
                     onClick={handleSubmit}
+                    disabled={loading}
                   >
                     {loading === false ? "Signup" : <Spinner />}
                   </Button>

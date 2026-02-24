@@ -106,7 +106,7 @@ export default function UserSettings() {
   };
 
   return (
-    <div className="fixed inset-0 bg-black overflow-hidden flex items-center justify-center">
+    <div className="relative min-h-full w-full bg-black overflow-hidden flex items-center justify-center">
       <div className="absolute inset-0 z-0">
         <Particles
           className="h-full w-full"

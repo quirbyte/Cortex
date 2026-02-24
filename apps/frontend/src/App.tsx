@@ -5,6 +5,7 @@ import AuthPage from "./pages/auth/AuthPage";
 import ProtectedRoute from "./components/core/ProtectedRoute";
 import UserDashboard from "./pages/dashboard/UserDashboard";
 import AuthRedirect from "./components/core/AuthRedirect";
+import UserSettings from "./pages/dashboard/pages/UserSettings";
 
 export default function App() {
   return (
@@ -17,7 +18,9 @@ export default function App() {
           </Route>
         </Route>
         <Route element={<ProtectedRoute />}>
-          <Route path="/dashboard" element={<UserDashboard />} />
+          <Route path="/dashboard" element={<UserDashboard />}>
+            <Route path="user-settings" element={<UserSettings />} />
+          </Route>
         </Route>
         <Route path="/" element={<Navigate to="/login" />} />
       </Routes>
