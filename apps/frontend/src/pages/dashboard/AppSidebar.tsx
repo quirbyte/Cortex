@@ -6,7 +6,7 @@ import {
   SidebarContent,
   SidebarFooter,
 } from "@/components/ui/sidebar";
-import { User2Icon, SunIcon, MoonIcon } from "lucide-react";
+import { User2Icon, SunIcon, MoonIcon, LayoutDashboard } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 
@@ -49,17 +49,20 @@ export default function AppSidebar() {
     <Sidebar className="border-r border-border">
       <SidebarHeader className="bg-sidebar text-sidebar-foreground flex flex-row items-center justify-between p-4 pb-2">
         <div className="flex items-center gap-2.5">
-          <img 
-            src="/cortex.png" 
-            alt="Cortex Logo" 
+          <img
+            src="/cortex.png"
+            alt="Cortex Logo"
             style={{
-              filter: theme === "dark" 
-                ? "invert(100%) sepia(0%) saturate(0%) brightness(200%) contrast(100%)" 
-                : "none"
+              filter:
+                theme === "dark"
+                  ? "invert(100%) sepia(0%) saturate(0%) brightness(200%) contrast(100%)"
+                  : "none",
             }}
             className="h-7 w-7 object-contain transition-all duration-500"
           />
-          <span className="font-bold text-2xl tracking-tighter text-foreground">Cortex</span>
+          <span className="font-bold text-3xl tracking-tighter text-foreground">
+            Cortex
+          </span>
         </div>
 
         {state === "expanded" && (
@@ -88,14 +91,24 @@ export default function AppSidebar() {
         )}
       </SidebarHeader>
 
-      <SidebarContent className="bg-sidebar text-sidebar-foreground"></SidebarContent>
+      <SidebarContent className="bg-sidebar text-sidebar-foreground flex flex-col items-center mt-10">
+        <Card
+          onClick={() => navigate("/dashboard/overview")}
+          className="cursor-default text-foreground bg-zinc-200 dark:bg-zinc-900 hover:bg-zinc-300 dark:hover:bg-zinc-800 rounded-3xl border-0 p-1 w-[90%] text-center font-bold tracking-tighter text-xl"
+        >
+          <div className="flex items-center justify-center gap-2">
+            <LayoutDashboard size={20} className="shrink-0" />
+            <span className="font-bold tracking-tighter text-xl">Overview</span>
+          </div>
+        </Card>
+      </SidebarContent>
 
       <SidebarFooter
         onClick={() => navigate("/dashboard/user-settings")}
         className="bg-sidebar p-2 pt-0 cursor-pointer"
       >
-        <Card className="bg-zinc-100 dark:bg-zinc-900 border-none rounded-xl shadow-none hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors duration-200 py-1.5">
-          <CardContent className="flex items-center gap-3 px-3 py-0">
+        <Card className="bg-zinc-200 dark:bg-zinc-900 border-none rounded-xl shadow-none hover:bg-zinc-300 dark:hover:bg-zinc-800 transition-colors duration-200 py-1.5">
+          <CardContent className="flex items-center gap-3 pr-3 py-0 pl-7">
             <div className="bg-background h-8 w-8 shrink-0 flex items-center justify-center rounded-full border border-border text-muted-foreground">
               <User2Icon size={18} />
             </div>

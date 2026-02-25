@@ -6,6 +6,7 @@ import ProtectedRoute from "./components/core/ProtectedRoute";
 import UserDashboard from "./pages/dashboard/UserDashboard";
 import AuthRedirect from "./components/core/AuthRedirect";
 import UserSettings from "./pages/dashboard/pages/UserSettings";
+import Overview from "./pages/dashboard/pages/Overview";
 
 export default function App() {
   return (
@@ -20,6 +21,7 @@ export default function App() {
         <Route element={<ProtectedRoute />}>
           <Route path="/dashboard" element={<UserDashboard />}>
             <Route path="user-settings" element={<UserSettings />} />
+            <Route path="overview" element={<Overview/>} />
           </Route>
         </Route>
         <Route path="/" element={<Navigate to="/login" />} />
