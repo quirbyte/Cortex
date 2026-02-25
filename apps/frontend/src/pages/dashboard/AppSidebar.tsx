@@ -59,7 +59,7 @@ export default function AppSidebar() {
             }}
             className="h-7 w-7 object-contain transition-all duration-500"
           />
-          <span className="font-bold text-2xl tracking-tighter">Cortex</span>
+          <span className="font-bold text-2xl tracking-tighter text-foreground">Cortex</span>
         </div>
 
         {state === "expanded" && (
@@ -92,20 +92,20 @@ export default function AppSidebar() {
 
       <SidebarFooter
         onClick={() => navigate("/dashboard/user-settings")}
-        className="bg-sidebar text-sidebar-foreground p-0 cursor-pointer"
+        className="bg-sidebar p-2 pt-0 cursor-pointer"
       >
-        <Card className="bg-sidebar border-border border-x-0 border-t rounded-t-sm rounded-b-none p-2 shadow-none">
-          <CardContent className="flex items-center gap-3 px-4 py-3">
-            <div className="bg-sidebar-accent h-8 w-8 shrink-0 flex items-center justify-center rounded-full text-muted-foreground">
+        <Card className="bg-zinc-100 dark:bg-zinc-900 border-none rounded-xl shadow-none hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors duration-200 py-1.5">
+          <CardContent className="flex items-center gap-3 px-3 py-0">
+            <div className="bg-background h-8 w-8 shrink-0 flex items-center justify-center rounded-full border border-border text-muted-foreground">
               <User2Icon size={18} />
             </div>
 
             {state === "expanded" && (
               <div className="flex flex-col truncate">
-                <div className="text-sidebar-foreground text-xs font-bold truncate">
+                <div className="text-foreground text-xs font-bold truncate">
                   {userData.name}
                 </div>
-                <div className="text-muted-foreground text-[10px] truncate">
+                <div className="text-muted-foreground text-[10px] truncate font-medium">
                   {userData.email}
                 </div>
               </div>
