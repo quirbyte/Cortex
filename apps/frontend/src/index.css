@@ -132,3 +132,43 @@
     @apply bg-background text-foreground transition-colors duration-300;
   }
 }
+
+@layer base {
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-muted/20 rounded-full transition-colors;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-muted/40;
+  }
+
+  .dark ::-webkit-scrollbar-thumb {
+    background-color: oklch(1 0 0 / 10%);
+  }
+
+  .dark ::-webkit-scrollbar-thumb:hover {
+    background-color: oklch(1 0 0 / 25%);
+  }
+
+  .dark ::-webkit-scrollbar-track {
+    background-color: oklch(0 0 0); 
+  }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: oklch(0.45 0 0 / 20%) transparent;
+  }
+
+  .dark * {
+    scrollbar-color: oklch(1 0 0 / 10%) oklch(0 0 0);
+  }
+}
