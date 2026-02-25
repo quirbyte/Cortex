@@ -88,7 +88,7 @@ export default function Events() {
 
         <footer className="mt-40 flex flex-col items-center gap-8">
           <div className="h-px w-full bg-linear-to-r from-transparent via-border to-transparent" />
-          <p className="text-[10px] font-black uppercase tracking-[1.5em] text-muted-foreground/40 whitespace-nowrap ml-[1.5em]">
+          <p className="text-[10px] font-black uppercase tracking-[1.5em] text-black dark:text-muted-foreground/40 whitespace-nowrap ml-[1.5em]">
             End of Catalog
           </p>
         </footer>
