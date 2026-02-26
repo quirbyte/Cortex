@@ -54,7 +54,7 @@ export default function Events() {
           <Particles
             key={`particles-${state}-${isDark}`}
             className="h-full w-full"
-            quantity={isDark ? 140 : 60}
+            quantity={isDark ? 180 : 140}
             ease={80}
             color={isDark ? "#ffffff" : "#000000"}
             staticity={30}

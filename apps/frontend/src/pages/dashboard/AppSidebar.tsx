@@ -6,7 +6,7 @@ import {
   SidebarContent,
   SidebarFooter,
 } from "@/components/ui/sidebar";
-import { User2Icon, SunIcon, MoonIcon, LayoutDashboard } from "lucide-react";
+import { User2Icon, SunIcon, MoonIcon, LayoutDashboard,BalloonIcon,TicketIcon,Building2Icon } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 
@@ -91,7 +91,7 @@ export default function AppSidebar() {
         )}
       </SidebarHeader>
 
-      <SidebarContent className="bg-sidebar text-sidebar-foreground flex flex-col items-center mt-10">
+      <SidebarContent className="bg-sidebar text-sidebar-foreground flex flex-col items-center mt-10 gap-7 pb-18 py-8">
         <Card
           onClick={() => navigate("/dashboard/overview")}
           className="cursor-default text-foreground bg-zinc-200 dark:bg-zinc-900 hover:bg-zinc-300 dark:hover:bg-zinc-800 rounded-3xl border-0 p-1 w-[90%] text-center font-bold tracking-tighter text-xl"
@@ -99,6 +99,33 @@ export default function AppSidebar() {
           <div className="flex items-center justify-center gap-2">
             <LayoutDashboard size={20} className="shrink-0" />
             <span className="font-bold tracking-tighter text-xl">Overview</span>
+          </div>
+        </Card>
+        <Card
+          onClick={() => navigate("/dashboard/events")}
+          className="cursor-default text-foreground bg-zinc-200 dark:bg-zinc-900 hover:bg-zinc-300 dark:hover:bg-zinc-800 rounded-3xl border-0 p-1 w-[90%] text-center font-bold tracking-tighter text-xl"
+        >
+          <div className="flex items-center justify-center gap-2">
+            <BalloonIcon size={20} className="shrink-0" />
+            <span className="font-bold tracking-tighter text-xl">Browse Events</span>
+          </div>
+        </Card>
+        <Card
+          onClick={() => navigate("/dashboard/my-bookings")}
+          className="cursor-default text-foreground bg-zinc-200 dark:bg-zinc-900 hover:bg-zinc-300 dark:hover:bg-zinc-800 rounded-3xl border-0 p-1 w-[90%] text-center font-bold tracking-tighter text-xl"
+        >
+          <div className="flex items-center justify-center gap-2">
+            <TicketIcon size={20} className="shrink-0" />
+            <span className="font-bold tracking-tighter text-xl">My Bookings</span>
+          </div>
+        </Card>
+        <Card
+          onClick={() => navigate("/dashboard/my-orgs")}
+          className="cursor-default text-foreground bg-zinc-200 dark:bg-zinc-900 hover:bg-zinc-300 dark:hover:bg-zinc-800 rounded-3xl border-0 p-1 w-[90%] text-center font-bold tracking-tighter text-xl"
+        >
+          <div className="flex items-center justify-center gap-2">
+            <Building2Icon size={20} className="shrink-0" />
+            <span className="font-bold tracking-tighter text-xl">My Organizations</span>
           </div>
         </Card>
       </SidebarContent>

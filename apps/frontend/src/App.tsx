@@ -8,6 +8,7 @@ import AuthRedirect from "./components/core/AuthRedirect";
 import UserSettings from "./pages/dashboard/pages/UserSettings";
 import Overview from "./pages/dashboard/pages/Overview";
 import Events from "./pages/dashboard/pages/Events";
+import TenantHome from "./pages/dashboard/pages/TenantHome";
 
 export default function App() {
   return (
@@ -24,6 +25,7 @@ export default function App() {
             <Route path="user-settings" element={<UserSettings />} />
             <Route path="overview" element={<Overview/>} />
             <Route path="events" element={<Events/>} />
+            <Route path="my-orgs" element={<TenantHome/>} />
           </Route>
         </Route>
         <Route path="/" element={<Navigate to="/login" />} />
