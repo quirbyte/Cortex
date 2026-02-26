@@ -83,7 +83,7 @@ export default function OrgCard({ name, role, onViewEvents }: OrgCardProps) {
             <div className="space-y-1.5">
               <div className="flex items-center gap-2">
                 <div className={`h-1 w-1 rounded-full ${theme.color.replace('text', 'bg')} animate-pulse`} />
-                <span className="text-[8px] font-black uppercase tracking-[0.3em] text-white/30">
+                <span className="text-[8px] -ml-2.5 font-black uppercase tracking-[0.3em] text-white/30">
                   Verified Authority
                 </span>
               </div>

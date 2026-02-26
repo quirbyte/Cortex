@@ -1,23 +1,37 @@
-import { Card, CardContent } from "@/components/ui/card";
 import {
   Sidebar,
   useSidebar,
   SidebarHeader,
   SidebarContent,
   SidebarFooter,
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton,
 } from "@/components/ui/sidebar";
-import { User2Icon, SunIcon, MoonIcon, LayoutDashboard,BalloonIcon,TicketIcon,Building2Icon } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { 
+  User2Icon, 
+  SunIcon, 
+  MoonIcon, 
+  LayoutDashboard, 
+  BalloonIcon, 
+  TicketIcon, 
+  Building2Icon,
+  ChevronRight,
+  FingerprintIcon
+} from "lucide-react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { cn } from "@/lib/utils";
 
 export default function AppSidebar() {
   const [userData, setUserData] = useState({
-    name: localStorage.getItem("username") || "",
-    email: localStorage.getItem("email") || "",
+    name: localStorage.getItem("username") || "Authorized User",
+    email: localStorage.getItem("email") || "access@cortex.systems",
   });
 
   const [theme, setTheme] = useState(localStorage.getItem("theme") || "dark");
   const navigate = useNavigate();
+  const location = useLocation();
   const { state } = useSidebar();
 
   useEffect(() => {
@@ -45,113 +59,135 @@ export default function AppSidebar() {
     setTheme(theme === "dark" ? "light" : "dark");
   };
 
+  const navItems = [
+    { label: "Overview", icon: LayoutDashboard, path: "/dashboard/overview" },
+    { label: "Browse Events", icon: BalloonIcon, path: "/dashboard/events" },
+    { label: "My Bookings", icon: TicketIcon, path: "/dashboard/my-bookings" },
+    { label: "Organizations", icon: Building2Icon, path: "/dashboard/my-orgs" },
+  ];
+
   return (
-    <Sidebar className="border-r border-border">
-      <SidebarHeader className="bg-sidebar text-sidebar-foreground flex flex-row items-center justify-between p-4 pb-2">
-        <div className="flex items-center gap-2.5">
-          <img
-            src="/cortex.png"
-            alt="Cortex Logo"
-            style={{
-              filter:
-                theme === "dark"
-                  ? "invert(100%) sepia(0%) saturate(0%) brightness(200%) contrast(100%)"
-                  : "none",
-            }}
-            className="h-7 w-7 object-contain transition-all duration-500"
-          />
-          <span className="font-bold text-3xl tracking-tighter text-foreground">
-            Cortex
-          </span>
-        </div>
-
-        {state === "expanded" && (
-          <div
-            onClick={toggleTheme}
-            className="relative flex items-center w-10 h-6 cursor-pointer group"
-          >
-            <div className="absolute w-full h-0.5 bg-border group-hover:bg-muted-foreground/30 transition-colors" />
-
-            <div
-              className={`
-              absolute flex items-center justify-center transition-all duration-500 ease-in-out
-              ${theme === "dark" ? "translate-x-6" : "translate-x-0"}
-            `}
-            >
-              {theme === "dark" ? (
-                <MoonIcon
-                  size={14}
-                  className="text-primary drop-shadow-[0_0_5px_rgba(var(--primary),0.8)]"
-                />
-              ) : (
-                <SunIcon size={14} className="text-foreground" />
-              )}
-            </div>
+    <Sidebar className="border-r border-zinc-200 dark:border-zinc-800 bg-white dark:bg-[#050505] transition-colors duration-500">
+      <SidebarHeader className="p-4 pb-2">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <img
+              src="/cortex.png"
+              alt="Cortex Logo"
+              style={{
+                filter:
+                  theme === "dark"
+                    ? "invert(100%) sepia(0%) saturate(0%) brightness(200%) contrast(100%)"
+                    : "none",
+              }}
+              className="h-7 w-7 object-contain transition-all duration-500"
+            />
+            {state === "expanded" && (
+              <span className="font-bold text-3xl tracking-tighter text-foreground">
+                Cortex
+              </span>
+            )}
           </div>
-        )}
+
+          {state === "expanded" && (
+            <div
+              onClick={toggleTheme}
+              className="relative flex items-center w-10 h-6 cursor-pointer group"
+            >
+              <div className="absolute w-full h-0.5 bg-border group-hover:bg-muted-foreground/30 transition-colors" />
+              <div
+                className={`
+                absolute flex items-center justify-center transition-all duration-500 ease-in-out
+                ${theme === "dark" ? "translate-x-6" : "translate-x-0"}
+              `}
+              >
+                {theme === "dark" ? (
+                  <MoonIcon
+                    size={14}
+                    className="text-primary drop-shadow-[0_0_5px_rgba(var(--primary),0.8)]"
+                  />
+                ) : (
+                  <SunIcon size={14} className="text-foreground" />
+                )}
+              </div>
+            </div>
+          )}
+        </div>
       </SidebarHeader>
 
-      <SidebarContent className="bg-sidebar text-sidebar-foreground flex flex-col items-center mt-10 gap-7 pb-18 py-8">
-        <Card
-          onClick={() => navigate("/dashboard/overview")}
-          className="cursor-default text-foreground bg-zinc-200 dark:bg-zinc-900 hover:bg-zinc-300 dark:hover:bg-zinc-800 rounded-3xl border-0 p-1 w-[90%] text-center font-bold tracking-tighter text-xl"
-        >
-          <div className="flex items-center justify-center gap-2">
-            <LayoutDashboard size={20} className="shrink-0" />
-            <span className="font-bold tracking-tighter text-xl">Overview</span>
-          </div>
-        </Card>
-        <Card
-          onClick={() => navigate("/dashboard/events")}
-          className="cursor-default text-foreground bg-zinc-200 dark:bg-zinc-900 hover:bg-zinc-300 dark:hover:bg-zinc-800 rounded-3xl border-0 p-1 w-[90%] text-center font-bold tracking-tighter text-xl"
-        >
-          <div className="flex items-center justify-center gap-2">
-            <BalloonIcon size={20} className="shrink-0" />
-            <span className="font-bold tracking-tighter text-xl">Browse Events</span>
-          </div>
-        </Card>
-        <Card
-          onClick={() => navigate("/dashboard/my-bookings")}
-          className="cursor-default text-foreground bg-zinc-200 dark:bg-zinc-900 hover:bg-zinc-300 dark:hover:bg-zinc-800 rounded-3xl border-0 p-1 w-[90%] text-center font-bold tracking-tighter text-xl"
-        >
-          <div className="flex items-center justify-center gap-2">
-            <TicketIcon size={20} className="shrink-0" />
-            <span className="font-bold tracking-tighter text-xl">My Bookings</span>
-          </div>
-        </Card>
-        <Card
-          onClick={() => navigate("/dashboard/my-orgs")}
-          className="cursor-default text-foreground bg-zinc-200 dark:bg-zinc-900 hover:bg-zinc-300 dark:hover:bg-zinc-800 rounded-3xl border-0 p-1 w-[90%] text-center font-bold tracking-tighter text-xl"
-        >
-          <div className="flex items-center justify-center gap-2">
-            <Building2Icon size={20} className="shrink-0" />
-            <span className="font-bold tracking-tighter text-xl">My Organizations</span>
-          </div>
-        </Card>
+      <SidebarContent className="px-4 mt-8">
+        <div className="mb-4 px-4 text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/50">
+          {state === "expanded" ? "Main Terminal" : "•••"}
+        </div>
+        
+        <SidebarMenu className="gap-1.5">
+          {navItems.map((item) => {
+            const isActive = location.pathname === item.path;
+            return (
+              <SidebarMenuItem key={item.path}>
+                <SidebarMenuButton
+                  onClick={() => navigate(item.path)}
+                  className={cn(
+                    "relative h-12 px-4 rounded-xl transition-all duration-300 group overflow-hidden",
+                    isActive 
+                      ? "bg-zinc-100 dark:bg-zinc-900 text-foreground shadow-sm" 
+                      : "text-muted-foreground hover:text-foreground hover:bg-zinc-50 dark:hover:bg-zinc-900/40"
+                  )}
+                >
+                  <item.icon size={18} className={cn(
+                    "transition-all duration-500",
+                    isActive ? "text-primary scale-110" : "group-hover:text-foreground"
+                  )} />
+                  
+                  {state === "expanded" && (
+                    <div className="flex items-center justify-between w-full ml-3">
+                      <span className={cn(
+                        "font-bold tracking-tight text-xs uppercase transition-colors",
+                        isActive ? "text-foreground" : "text-muted-foreground group-hover:text-foreground"
+                      )}>
+                        {item.label}
+                      </span>
+                      {isActive && (
+                        <ChevronRight size={14} className="text-primary animate-in fade-in slide-in-from-left-2 duration-500" />
+                      )}
+                    </div>
+                  )}
+
+                  {isActive && (
+                    <div className="absolute left-0 w-1 h-5 bg-primary rounded-r-full" />
+                  )}
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            );
+          })}
+        </SidebarMenu>
       </SidebarContent>
 
-      <SidebarFooter
-        onClick={() => navigate("/dashboard/user-settings")}
-        className="bg-sidebar p-2 pt-0 cursor-pointer"
-      >
-        <Card className="bg-zinc-200 dark:bg-zinc-900 border-none rounded-xl shadow-none hover:bg-zinc-300 dark:hover:bg-zinc-800 transition-colors duration-200 py-1.5">
-          <CardContent className="flex items-center gap-3 pr-3 py-0 pl-7">
-            <div className="bg-background h-8 w-8 shrink-0 flex items-center justify-center rounded-full border border-border text-muted-foreground">
-              <User2Icon size={18} />
-            </div>
+      <SidebarFooter className="p-4">
+        <button
+          onClick={() => navigate("/dashboard/user-settings")}
+          className="group relative w-full flex items-center gap-3 p-3 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-[#0a0a0a] hover:border-primary/40 transition-all duration-500"
+        >
+          <div className="relative h-9 w-9 shrink-0 overflow-hidden rounded-xl border border-white/5 bg-zinc-200 dark:bg-zinc-800">
+             <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+             <User2Icon size={18} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-muted-foreground group-hover:text-primary transition-colors" />
+          </div>
 
-            {state === "expanded" && (
-              <div className="flex flex-col truncate">
-                <div className="text-foreground text-xs font-bold truncate">
-                  {userData.name}
-                </div>
-                <div className="text-muted-foreground text-[10px] truncate font-medium">
-                  {userData.email}
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+          {state === "expanded" && (
+            <div className="flex flex-col items-start truncate text-left">
+              <span className="text-[10px] font-black uppercase tracking-widest text-foreground leading-none">
+                {userData.name || "Access Granted"}
+              </span>
+              <span className="text-[9px] font-bold text-muted-foreground truncate w-32 mt-1.5 opacity-60">
+                {userData.email}
+              </span>
+            </div>
+          )}
+          
+          <div className="absolute right-4">
+            <FingerprintIcon size={14} className="text-muted-foreground/20 group-hover:text-primary/40 transition-colors" />
+          </div>
+        </button>
       </SidebarFooter>
     </Sidebar>
   );
