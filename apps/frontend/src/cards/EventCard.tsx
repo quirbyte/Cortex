@@ -4,22 +4,24 @@ import { MdStadium } from "react-icons/md";
 import { FaRupeeSign } from "react-icons/fa";
 
 interface CardProps {
+  event_id:string;
   tenant_name: string;
   event_name: string;
   price: number;
   total: number;
   sold: number;
   venue: string;
+  handleSubmit: (event_id:string)=>void;
 }
 
 export default function EventCard(props: CardProps) {
   const remaining = props.total - props.sold;
   const percentage = (props.sold / props.total) * 100;
+  const {event_id,handleSubmit} = props;
 
   return (
     <div className="relative group w-72 aspect-3/4">
       <Card className="relative w-full h-full rounded-[2rem] border border-white/5 bg-zinc-950 transition-all duration-500 ease-out group-hover:scale-[1.04] group-hover:z-50 group-hover:shadow-[0_40px_80px_-15px_rgba(0,0,0,0.8)] group-hover:border-white/20 overflow-visible">
-        
         <div className="absolute inset-0 z-0 rounded-[2rem] overflow-hidden">
           <img
             className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-40 group-hover:opacity-60 grayscale-40 group-hover:grayscale-0"
@@ -62,7 +64,10 @@ export default function EventCard(props: CardProps) {
                 </div>
               </div>
 
-              <Button className="h-10 px-6 rounded-xl bg-white text-black hover:bg-zinc-200 font-bold text-[10px] uppercase tracking-wider transition-all active:scale-95">
+              <Button
+                onClick={()=>handleSubmit(event_id)}
+                className="h-10 px-6 rounded-xl bg-white text-black hover:bg-zinc-200 font-bold text-[10px] uppercase tracking-wider transition-all active:scale-95"
+              >
                 Book
               </Button>
             </div>
@@ -70,7 +75,13 @@ export default function EventCard(props: CardProps) {
             <div className="space-y-2">
               <div className="flex justify-between items-center text-[8px] font-black uppercase tracking-tight">
                 <span className="text-white/20">Availability</span>
-                <span className={remaining < 100 ? 'text-orange-500 animate-pulse' : 'text-white/30'}>
+                <span
+                  className={
+                    remaining < 100
+                      ? "text-orange-500 animate-pulse"
+                      : "text-white/30"
+                  }
+                >
                   {remaining} Seats Left
                 </span>
               </div>
