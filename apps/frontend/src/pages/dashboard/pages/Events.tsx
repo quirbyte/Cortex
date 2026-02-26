@@ -12,10 +12,11 @@ export default function Events() {
   const { state } = useSidebar();
   const [isDark, setIsDark] = useState(true);
   const [bookingId, setBookingId] = useState<string | null>(null);
+  const [showQR, setShowQR] = useState(false);
   const [alert, setAlert] = useState<{
     show: boolean;
     message: string;
-  }>({ show: false, message: ""});
+  }>({ show: false, message: "" });
   useEffect(() => {
     const checkTheme = () =>
       setIsDark(document.documentElement.classList.contains("dark"));
@@ -35,14 +36,14 @@ export default function Events() {
       });
       const id = response.data.booking_id;
       setBookingId(id);
-      <QRCard book_id={bookingId} />;
+      setShowQR(true);
     } catch (err: any) {
       triggerAlert("Booking failed! Try again");
     }
   };
 
   const triggerAlert = (message: string) => {
-    setAlert({ show: true, message});
+    setAlert({ show: true, message });
     setTimeout(() => setAlert((prev) => ({ ...prev, show: false })), 1500);
   };
 
@@ -161,6 +162,21 @@ export default function Events() {
           </footer>
         </div>
       </div>
+      {showQR && bookingId && (
+      <div className="fixed inset-0 z-200 flex items-center justify-center">
+        <div 
+          className="absolute inset-0 bg-background/60 backdrop-blur-xl animate-in fade-in duration-500" 
+          onClick={() => setShowQR(false)} 
+        />
+
+        <div className="relative z-10">
+          <QRCard 
+            book_id={bookingId} 
+            onClose={() => setShowQR(false)} 
+          />
+        </div>
+      </div>
+    )}
       {alert.show && (
         <div className="fixed bottom-10 right-10 z-100 w-80 animate-in fade-in slide-in-from-bottom-10 duration-500">
           <Alert className="border-border bg-card/80 backdrop-blur-xl shadow-2xl rounded-2xl border-l-4 border-l-primary">
