@@ -8,16 +8,16 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
 } from "@/components/ui/sidebar";
-import { 
-  User2Icon, 
-  SunIcon, 
-  MoonIcon, 
-  LayoutDashboard, 
-  BalloonIcon, 
-  TicketIcon, 
+import {
+  User2Icon,
+  SunIcon,
+  MoonIcon,
+  LayoutDashboard,
+  BalloonIcon,
+  TicketIcon,
   Building2Icon,
   ChevronRight,
-  FingerprintIcon
+  FingerprintIcon,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -119,7 +119,7 @@ export default function AppSidebar() {
         <div className="mb-4 px-4 text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/50">
           {state === "expanded" ? "Main Terminal" : "•••"}
         </div>
-        
+
         <SidebarMenu className="gap-1.5">
           {navItems.map((item) => {
             const isActive = location.pathname === item.path;
@@ -129,26 +129,38 @@ export default function AppSidebar() {
                   onClick={() => navigate(item.path)}
                   className={cn(
                     "relative h-12 px-4 rounded-xl transition-all duration-300 group overflow-hidden",
-                    isActive 
-                      ? "bg-zinc-100 dark:bg-zinc-900 text-foreground shadow-sm" 
-                      : "text-muted-foreground hover:text-foreground hover:bg-zinc-50 dark:hover:bg-zinc-900/40"
+                    isActive
+                      ? "bg-zinc-100 dark:bg-zinc-900 text-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground hover:bg-zinc-50 dark:hover:bg-zinc-900/40",
                   )}
                 >
-                  <item.icon size={18} className={cn(
-                    "transition-all duration-500",
-                    isActive ? "text-primary scale-110" : "group-hover:text-foreground"
-                  )} />
-                  
+                  <item.icon
+                    size={18}
+                    className={cn(
+                      "transition-all duration-500",
+                      isActive
+                        ? "text-primary scale-110"
+                        : "group-hover:text-foreground",
+                    )}
+                  />
+
                   {state === "expanded" && (
                     <div className="flex items-center justify-between w-full ml-3">
-                      <span className={cn(
-                        "font-bold tracking-tight text-xs uppercase transition-colors",
-                        isActive ? "text-foreground" : "text-muted-foreground group-hover:text-foreground"
-                      )}>
+                      <span
+                        className={cn(
+                          "font-bold tracking-tight text-xs uppercase transition-colors",
+                          isActive
+                            ? "text-foreground"
+                            : "text-muted-foreground group-hover:text-foreground",
+                        )}
+                      >
                         {item.label}
                       </span>
                       {isActive && (
-                        <ChevronRight size={14} className="text-primary animate-in fade-in slide-in-from-left-2 duration-500" />
+                        <ChevronRight
+                          size={14}
+                          className="text-primary animate-in fade-in slide-in-from-left-2 duration-500"
+                        />
                       )}
                     </div>
                   )}
@@ -169,8 +181,11 @@ export default function AppSidebar() {
           className="group relative w-full flex items-center gap-3 p-3 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-[#0a0a0a] hover:border-primary/40 transition-all duration-500"
         >
           <div className="relative h-9 w-9 shrink-0 overflow-hidden rounded-xl border border-white/5 bg-zinc-200 dark:bg-zinc-800">
-             <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-             <User2Icon size={18} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-muted-foreground group-hover:text-primary transition-colors" />
+            <div className="absolute inset-0 bg-linear-to-tr from-primary/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+            <User2Icon
+              size={18}
+              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-muted-foreground group-hover:text-primary transition-colors"
+            />
           </div>
 
           {state === "expanded" && (
@@ -183,9 +198,12 @@ export default function AppSidebar() {
               </span>
             </div>
           )}
-          
+
           <div className="absolute right-4">
-            <FingerprintIcon size={14} className="text-muted-foreground/20 group-hover:text-primary/40 transition-colors" />
+            <FingerprintIcon
+              size={14}
+              className="text-muted-foreground/20 group-hover:text-primary/40 transition-colors"
+            />
           </div>
         </button>
       </SidebarFooter>
