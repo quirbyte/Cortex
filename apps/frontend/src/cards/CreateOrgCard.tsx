@@ -8,12 +8,13 @@ import {
   TerminalIcon,
   FingerprintIcon,
   Loader2Icon,
+  GlobeIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface CreateOrgCardProps {
   onClose: () => void;
-  onCreate: (name: string) => void;
+  onCreate: (name: string, slug: string) => void;
 }
 
 export default function CreateOrgCard({
@@ -21,13 +22,14 @@ export default function CreateOrgCard({
   onCreate,
 }: CreateOrgCardProps) {
   const [name, setName] = useState("");
+  const [slug, setSlug] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = () => {
-    if (!name) return;
+    if (!name || !slug) return;
     setIsSubmitting(true);
     setTimeout(() => {
-      onCreate(name);
+      onCreate(name, slug);
       setIsSubmitting(false);
     }, 1500);
   };
@@ -62,15 +64,48 @@ export default function CreateOrgCard({
             </p>
           </div>
 
-          <div className="relative group/input">
-            <Input
-              autoFocus
-              placeholder="DESIGNATION_ID"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="h-16 bg-black/3 dark:bg-white/3 border-black/10 dark:border-white/10 rounded-2xl text-foreground font-mono text-sm tracking-widest uppercase placeholder:text-muted-foreground/30 focus-visible:ring-primary/50 transition-all px-6"
-            />
-            <div className="absolute bottom-0 left-6 right-6 h-px w-0 bg-primary group-focus-within/input:w-[calc(100%-48px)] transition-all duration-700 mx-auto" />
+          <div className="space-y-6">
+            <div className="relative group/input">
+              <Label className="text-[9px] uppercase tracking-widest ml-2 mb-2 block opacity-50">
+                Entity Name
+              </Label>
+              <Input
+                autoFocus
+                placeholder="DESIGNATION_ID"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="h-14 bg-black/3 dark:bg-white/3 border-black/10 dark:border-white/10 rounded-2xl text-foreground font-mono text-sm tracking-widest uppercase placeholder:text-muted-foreground/30 focus-visible:ring-primary/50 transition-all px-6"
+              />
+            </div>
+
+            <div className="relative group/input">
+              <Label className="text-[9px] uppercase tracking-widest ml-2 mb-2 block opacity-50">
+                Subdomain Slug
+              </Label>
+              <div className="relative">
+                <Input
+                  placeholder="org-slug"
+                  value={slug}
+                  onChange={(e) =>
+                    setSlug(e.target.value.toLowerCase().replace(/\s+/g, "-"))
+                  }
+                  className="h-14 bg-black/3 dark:bg-white/3 border-black/10 dark:border-white/10 rounded-2xl text-foreground font-mono text-sm tracking-widest lowercase placeholder:text-muted-foreground/30 focus-visible:ring-primary/50 transition-all px-6 pr-32"
+                />
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-bold text-primary/40 uppercase tracking-tighter">
+                  .domain_name
+                </div>
+              </div>
+
+              {slug && (
+                <div className="flex items-center gap-2 mt-3 px-2 text-primary/60">
+                  <GlobeIcon size={10} />
+                  <span className="text-[9px] font-mono tracking-tight">
+                    {/* later update to app domain after deployment */}
+                    https://{slug || "..."}.domain
+                  </span>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
@@ -85,7 +120,7 @@ export default function CreateOrgCard({
 
           <Button
             onClick={handleSubmit}
-            disabled={!name || isSubmitting}
+            disabled={!name || !slug || isSubmitting}
             className={cn(
               "relative w-full h-16 rounded-2xl transition-all duration-500 font-black uppercase text-[11px] tracking-[0.4em] overflow-hidden shadow-xl",
               isSubmitting
@@ -113,4 +148,14 @@ export default function CreateOrgCard({
       </Card>
     </div>
   );
+}
+
+function Label({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return <label className={className}>{children}</label>;
 }

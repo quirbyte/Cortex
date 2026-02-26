@@ -14,6 +14,7 @@ export default function Organizations() {
     { name: "Aether Dynamics", role: "Admin" as const },
     { name: "Veridian Collective", role: "Moderator" as const },
     { name: "Nexus Relief", role: "Volunteer" as const },
+    { name: "KALINGA INSTUTUTE OF INDUSTRIAL TECHNOLOGY", role: "Volunteer" as const },
   ]);
 
   useEffect(() => {
