@@ -1,9 +1,35 @@
 import EventCard from "@/cards/EventCard";
+import { Particles } from "@/components/ui/particles";
+import { useSidebar } from "@/components/ui/sidebar";
+import { useState,useEffect } from "react";
 
 export default function Events() {
   const currYear = new Date().getUTCFullYear();
+  const { state } = useSidebar();
+  const [isDark, setIsDark] = useState(true);
+  useEffect(() => {
+    const checkTheme = () =>
+      setIsDark(document.documentElement.classList.contains("dark"));
+    checkTheme();
+    const observer = new MutationObserver(checkTheme);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+    return () => observer.disconnect();
+  }, []);
   return (
-    <div className="min-h-full bg-background transition-colors duration-500">
+    <div className="relative min-h-full bg-background transition-colors duration-500">
+      <div className="absolute inset-0 z-0">
+        <Particles
+          key={`particles-${state}-${isDark}`}
+          className="h-full w-full"
+          quantity={isDark ? 140 : 60}
+          ease={80}
+          color={isDark ? "#ffffff" : "#000000"}
+          staticity={30}
+        />
+      </div>
       <div className="mx-auto max-w-350 px-10 py-20">
         <header className="relative mb-24 flex flex-col md:flex-row md:items-end justify-between gap-8">
           <div className="space-y-6">

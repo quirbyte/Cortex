@@ -112,14 +112,14 @@ export default function UserSettings() {
         <Particles
           key={`particles-${state}-${isDark}`}
           className="h-full w-full"
-          quantity={isDark ? 80 : 40}
+          quantity={isDark ? 140 : 60}
           ease={80}
           color={isDark ? "#ffffff" : "#000000"}
           staticity={30}
         />
       </div>
 
-      <main className="relative z-10 mx-auto max-w-[1200px] px-8 py-20 lg:py-32">
+      <main className="relative z-10 mx-auto max-w-300 px-8 py-20 lg:py-32">
         <header className="mb-16 space-y-4">
           <div className="flex items-center gap-3">
             <span className="h-px w-12 bg-primary" />
@@ -287,7 +287,7 @@ export default function UserSettings() {
                 <h3 className="text-lg font-bold tracking-tight text-destructive">
                   Danger Zone
                 </h3>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-zinc-800 dark:text-muted-foreground">
                   Irreversible action. All data will be purged.
                 </p>
               </div>
@@ -306,7 +306,7 @@ export default function UserSettings() {
       </main>
 
       {alert.show && (
-        <div className="fixed bottom-10 right-10 z-[100] w-80 animate-in fade-in slide-in-from-bottom-10 duration-500">
+        <div className="fixed bottom-10 right-10 z-100 w-80 animate-in fade-in slide-in-from-bottom-10 duration-500">
           <Alert className="border-border bg-card/80 backdrop-blur-xl shadow-2xl rounded-2xl border-l-4 border-l-primary">
             {alert.type === "success" ? (
               <CheckCircle2Icon className="h-4 w-4 text-emerald-500" />
