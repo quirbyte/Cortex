@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -15,23 +15,26 @@ import { cn } from "@/lib/utils";
 interface CreateOrgCardProps {
   onClose: () => void;
   onCreate: (name: string, slug: string) => void;
+  error?: string | null;
 }
 
 export default function CreateOrgCard({
   onClose,
   onCreate,
+  error,
 }: CreateOrgCardProps) {
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  useEffect(() => {
+    if (error) setIsSubmitting(false);
+  }, [error]);
+
   const handleSubmit = () => {
     if (!name || !slug) return;
     setIsSubmitting(true);
-    setTimeout(() => {
-      onCreate(name, slug);
-      setIsSubmitting(false);
-    }, 1500);
+    onCreate(name, slug);
   };
 
   return (
@@ -89,21 +92,32 @@ export default function CreateOrgCard({
                   onChange={(e) =>
                     setSlug(e.target.value.toLowerCase().replace(/\s+/g, "-"))
                   }
-                  className="h-14 bg-black/3 dark:bg-white/3 border-black/10 dark:border-white/10 rounded-2xl text-foreground font-mono text-sm tracking-widest lowercase placeholder:text-muted-foreground/30 focus-visible:ring-primary/50 transition-all px-6 pr-32"
+                  className={cn(
+                    "h-14 bg-black/3 dark:bg-white/3 border-black/10 dark:border-white/10 rounded-2xl text-foreground font-mono text-sm tracking-widest lowercase placeholder:text-muted-foreground/30 focus-visible:ring-primary/50 transition-all px-6 pr-32",
+                    error && "border-destructive/50 ring-1 ring-destructive/20"
+                  )}
                 />
                 <div className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-bold text-primary/40 uppercase tracking-tighter">
                   .domain_name
                 </div>
               </div>
 
-              {slug && (
-                <div className="flex items-center gap-2 mt-3 px-2 text-primary/60">
-                  <GlobeIcon size={10} />
-                  <span className="text-[9px] font-mono tracking-tight">
-                    {/* later update to app domain after deployment */}
-                    https://{slug || "..."}.domain
+              {error ? (
+                <div className="flex items-center gap-2 mt-3 px-2 text-destructive">
+                  <span className="h-1 w-1 rounded-full bg-destructive animate-pulse" />
+                  <span className="text-[9px] font-black uppercase tracking-widest">
+                    {error}
                   </span>
                 </div>
+              ) : (
+                slug && (
+                  <div className="flex items-center gap-2 mt-3 px-2 text-primary/60">
+                    <GlobeIcon size={10} />
+                    <span className="text-[9px] font-mono tracking-tight">
+                      https://{slug}.domain
+                    </span>
+                  </div>
+                )
               )}
             </div>
           </div>
@@ -125,7 +139,7 @@ export default function CreateOrgCard({
               "relative w-full h-16 rounded-2xl transition-all duration-500 font-black uppercase text-[11px] tracking-[0.4em] overflow-hidden shadow-xl",
               isSubmitting
                 ? "bg-muted text-muted-foreground"
-                : "bg-zinc-950 dark:bg-primary text-white dark:text-primary-foreground hover:scale-[1.03] active:scale-95 hover:shadow-primary/20",
+                : "bg-zinc-950 dark:bg-primary text-white dark:text-primary-foreground hover:scale-[1.03] active:scale-95 hover:shadow-primary/20"
             )}
           >
             <span className="relative z-10 flex items-center justify-center gap-3">

@@ -44,7 +44,7 @@ TenantRouter.post(
       await MembershipModel.create({
         userId: req.userId,
         tenantId: newTenant._id,
-        role: "admin",
+        role: "Admin",
       });
 
       return res.json({
