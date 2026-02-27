@@ -1,7 +1,5 @@
 import { Router, Request, Response } from "express";
 import mongoose from "mongoose";
-import dotenv from "dotenv";
-dotenv.config();
 import bcrypt from "bcrypt";
 import z from "zod";
 import jwt from "jsonwebtoken";
@@ -18,114 +16,14 @@ interface UserUpdate {
   password?: string;
 }
 
-UserRouter.post("/signup", async (req: Request, res: Response) => {
-  const requiredBody = z.object({
-    username: z.string().min(3).max(20),
-    email: z.string().email().min(10),
-    password: z.string().min(6),
-  });
-  const { error, success } = requiredBody.safeParse(req.body);
-  if (!success) {
-    return res.status(400).json({
-      msg: error.flatten().fieldErrors,
-    });
-  }
-  try {
-    const username = req.body.username;
-    const email = req.body.email;
-    const password = req.body.password;
-    const hashed_pw = await bcrypt.hash(password, 10);
-    await UserModel.create({
-      name: username,
-      email: email,
-      password: hashed_pw,
-    });
-    return res.status(201).json({
-      msg: "You are Signed Up successfully!!",
-    });
-  } catch (e) {
-    return res.status(500).json({
-      msg: "Failed to sign you up!",
-    });
-  }
-});
-
-UserRouter.post("/login", async (req: Request, res: Response) => {
-  const requiredBody = z.object({
-    email: z.string().email().min(10),
-    password: z.string().min(6),
-  });
-  const { error, success } = requiredBody.safeParse(req.body);
-  if (!success) {
-    return res.status(400).json({
-      msg: error.flatten().fieldErrors,
-    });
-  }
-  try {
-    const { email, password } = req.body;
-    const user = await UserModel.findOne({ email: email });
-    if (!user) {
-      return res.status(403).json({
-        msg: "User does not exist",
-      });
-    }
-    const passwordMatch = await bcrypt.compare(password, user.password);
-    if (!passwordMatch) {
-      return res.status(403).json({
-        msg: "Invalid Credentials!!",
-      });
-    }
-    const token = jwt.sign(
-      {
-        id: user._id,
-      },
-      `${process.env.USER_SECRET}`,
-    );
-    return res.json({
-      token,
-      user: {
-        id: user._id,
-        email: user.email,
-        name: user.name,
-      },
-      msg: "You have been signed in successfully!!",
-    });
-  } catch (e) {
-    return res.status(500).json({
-      msg: "Failed to sign you in!",
-    });
-  }
-});
-
-UserRouter.get("/me", userMiddleware, async (req: Request, res: Response) => {
-  try {
-    if (!req.userId) {
-      return res.status(404).json({
-        msg: "Unauthorized User!",
-      });
-    }
-    const user = await UserModel.findOne({
-      _id: req.userId,
-    }).select("-password");
-    return res.json({
-      user,
-      msg: "Fetched User Details successfully!!",
-    });
-  } catch (e) {
-    return res.status(500).json({
-      msg: "Failed to Find User Data!!",
-    });
-  }
-});
-
-UserRouter.put("/update", userMiddleware, async (req, res) => {
+UserRouter.put("/update", userMiddleware, async (req: Request, res: Response) => {
   try {
     if (!req.userId) {
       return res.status(401).json({ msg: "User not verified!" });
     }
 
     const { name, email, password } = req.body;
-    const updatedData: any = {};
+    const updatedData: UserUpdate = {};
 
     if (name?.trim()) updatedData.name = name;
     if (email?.trim()) updatedData.email = email;
@@ -151,6 +49,7 @@ UserRouter.put("/update", userMiddleware, async (req, res) => {
     return res.status(500).json({ msg: "Failed to update data!" });
   }
 });
+
 UserRouter.delete(
   "/delete",
   userMiddleware,

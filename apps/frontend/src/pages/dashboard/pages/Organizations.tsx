@@ -97,7 +97,7 @@ export default function Organizations() {
   };
 
   const handleRedirect = (slug: string) => {
-    if (slug) navigate(`/dashboard/${slug}/home`);
+    if (slug) navigate(`/dashboard/${slug}/overview`);
   };
 
   return (

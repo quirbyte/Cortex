@@ -159,24 +159,24 @@ MembershipRouter.get(
           msg: "User not verified!!",
         });
       }
-      const TenantFromReq = req.params.tenantId;
-      if (!Types.ObjectId.isValid(TenantFromReq as string)) {
+      const TenantFromReq = req.params.tenantId as string;
+      if (!Types.ObjectId.isValid(TenantFromReq)) {
         return res.status(400).json({ msg: "Invalid ID format" });
       }
-      const tenantId = new Types.ObjectId(TenantFromReq as string);
+      const tenantId = new Types.ObjectId(TenantFromReq);
       const matchingMembership = await MembershipModel.findOne({
         tenantId,
-        userId:req.userId
+        userId: req.userId,
       });
-      if(!matchingMembership){
+      if (!matchingMembership) {
         return res.status(403).json({
-          msg: "Membership not found!!"
-        })
+          msg: "Membership not found!!",
+        });
       }
-      const role = matchingMembership?.role;
+      const role = matchingMembership.role;
       return res.json({
         role,
-        msg: "Role fetched successfully!!"
+        msg: "Role fetched successfully!!",
       });
     } catch (e) {
       return res.status(500).json({

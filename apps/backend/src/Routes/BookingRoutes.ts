@@ -99,7 +99,7 @@ BookingRouter.get(
   "/event/:eventId",
   userMiddleware,
   TenantMiddleware,
-  authorize(["admin", "moderator", "volunteer"]),
+  authorize(["Admin", "Moderator", "Volunteer"]),
   async (req: Request, res: Response) => {
     try {
       if (!req.userId || !req.tenantId) {
@@ -107,11 +107,11 @@ BookingRouter.get(
           msg: "Authentication/Tenant content missing!",
         });
       }
-      const EventFromReq = req.params.eventId;
-      if (!Types.ObjectId.isValid(EventFromReq as string)) {
+      const EventFromReq = req.params.eventId as string;
+      if (!Types.ObjectId.isValid(EventFromReq)) {
         return res.status(400).json({ msg: "Invalid ID format" });
       }
-      const queryId = new Types.ObjectId(EventFromReq as string);
+      const queryId = new Types.ObjectId(EventFromReq);
       const event = await EventModel.findOne({
         _id: queryId,
         tenantId: req.tenantId,
@@ -142,7 +142,8 @@ BookingRouter.get(
 BookingRouter.post(
   "/verify",
   userMiddleware,
-  TenantMiddleware,authorize(["admin", "moderator", "volunteer"]),
+  TenantMiddleware,
+  authorize(["Admin", "Moderator", "Volunteer"]),
   async (req: Request, res: Response) => {
     try {
       if (!req.userId || !req.tenantId) {

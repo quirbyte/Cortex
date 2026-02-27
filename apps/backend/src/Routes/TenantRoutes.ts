@@ -59,8 +59,6 @@ TenantRouter.post(
   },
 );
 
-
-
 TenantRouter.get("/:slug", async (req: Request, res: Response) => {
   try {
     const slug = req.params.slug as string;
@@ -87,7 +85,7 @@ TenantRouter.put(
   "/update/:id",
   userMiddleware,
   TenantMiddleware,
-  authorize(["Admin", "moderator"]),
+  authorize(["Admin", "Moderator"]),
   async (req: Request, res: Response) => {
     try {
       if (!req.tenantId || !req.userId) {
@@ -95,7 +93,7 @@ TenantRouter.put(
           msg: "User not verified!!",
         });
       }
-      const TenantFromReq = req.params.id;
+      const TenantFromReq = req.params.id as string;
       let { updatedName, updatedSlug } = req.body;
       const updatedData: TenantUpdate = {};
       if (updatedName && updatedName.trim() !== "") {
@@ -118,10 +116,10 @@ TenantRouter.put(
           msg: "Nothing to update!!",
         });
       }
-      if (!Types.ObjectId.isValid(TenantFromReq as string)) {
+      if (!Types.ObjectId.isValid(TenantFromReq)) {
         return res.status(400).json({ msg: "Invalid ID format" });
       }
-      const queryId = new Types.ObjectId(TenantFromReq as string);
+      const queryId = new Types.ObjectId(TenantFromReq);
       const result = await TenantModel.updateOne(
         {
           _id: queryId,
@@ -147,18 +145,6 @@ TenantRouter.put(
   },
 );
 
-TenantRouter.get("/public/:slug", async (req: Request, res: Response) => {
-  try {
-    const tenant = await TenantModel.findOne({
-      slug: req.params.slug as string,
-    }).select("name slug");
-    if (!tenant) return res.status(404).json({ msg: "Tenant not found" });
-    return res.json(tenant);
-  } catch (e) {
-    return res.status(500).json({ msg: "Error fetching public tenant info" });
-  }
-});
-
 TenantRouter.delete(
   "/delete/:id",
   userMiddleware,
@@ -171,11 +157,11 @@ TenantRouter.delete(
           msg: "User not verified!!",
         });
       }
-      const TenantFromReq = req.params.id;
-      if (!Types.ObjectId.isValid(TenantFromReq as string)) {
+      const TenantFromReq = req.params.id as string;
+      if (!Types.ObjectId.isValid(TenantFromReq)) {
         return res.status(400).json({ msg: "Invalid ID format" });
       }
-      const queryId = new Types.ObjectId(TenantFromReq as string);
+      const queryId = new Types.ObjectId(TenantFromReq);
       await TenantModel.deleteOne({
         _id: queryId,
       });
