@@ -5,6 +5,8 @@ import { TenantMiddleware } from "../Middleware/TenantMiddleware";
 import { TenantModel } from "../Models/Tenant";
 import { authorize } from "../Middleware/RoleMiddleware";
 import { MembershipModel } from "../Models/Membership";
+import { EventModel } from "../Models/Event";
+import { BookingModel } from "../Models/Booking";
 
 export const TenantRouter = Router();
 
@@ -12,6 +14,67 @@ interface TenantUpdate {
   name?: string;
   slug?: string;
 }
+
+interface InterfaceRecentActivity {
+  user_id: { name: string };
+  event_id: { name: string };
+  createdAt?: Date | string;
+}
+
+TenantRouter.get(
+  "/dashboard-stats",
+  userMiddleware,
+  TenantMiddleware,
+  authorize(["Admin", "Moderator", "Volunteer"]),
+  async (req: Request, res: Response) => {
+    try {
+      if (!req.tenantId || !req.userId) {
+        return res.status(404).json({
+          msg: "User not verified!!",
+        });
+      }
+      let eventIdArray: Types.ObjectId[] = [];
+      const [activeEventsArray, totalMembers] = await Promise.all([
+        EventModel.find({
+          tenantId: req.tenantId,
+          isDeleted: false,
+        }),
+        MembershipModel.countDocuments({
+          tenantId: req.tenantId,
+        }),
+      ]);
+
+      let ticketsSold = 0;
+      for (const event of activeEventsArray) {
+        ticketsSold += event.ticketDetails.sold;
+        eventIdArray.push(event._id);
+      }
+      let recentActivities: InterfaceRecentActivity[] = [];
+      if (eventIdArray.length <= 0) {
+        recentActivities = [];
+      } else {
+        recentActivities = await BookingModel.find({
+          event_id: { $in: eventIdArray },
+        })
+          .sort({ createdAt: -1 })
+          .limit(5)
+          .populate("user_id", "name").populate("event_id", "name") as unknown as InterfaceRecentActivity[];
+      }
+      const activeEvents = activeEventsArray.length;
+      return res.json({
+        activeEvents,
+        totalMembers,
+        ticketsSold,
+        recentActivities,
+        msg: "Tenant Analytics fetched successfully",
+      });
+    } catch (e) {
+      return res.status(500).json({
+        msg: "Failed to fetch Tenant Analytics",
+      });
+    }
+  },
+);
 
 TenantRouter.post(
   "/create",

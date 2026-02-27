@@ -1,4 +1,4 @@
-import { UserPlus, MoreHorizontal } from "lucide-react";
+import { UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function Members() {
