@@ -59,6 +59,22 @@ TenantRouter.post(
   },
 );
 
+TenantRouter.get("/public/:slug", async (req: Request, res: Response) => {
+  try {
+    const slugParam = (req.params.slug as string).trim().toLowerCase();
+    const tenant = await TenantModel.findOne({
+      slug: slugParam,
+    }).select("name slug");
+
+    if (!tenant) {
+      return res.status(404).json({ msg: "Tenant Not Found!!" });
+    }
+    return res.json(tenant);
+  } catch (e) {
+    return res.status(500).json({ msg: "Error fetching public tenant info" });
+  }
+});
+
 TenantRouter.get("/:slug", async (req: Request, res: Response) => {
   try {
     const slug = req.params.slug as string;

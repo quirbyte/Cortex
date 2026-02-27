@@ -22,9 +22,9 @@ const createEventSchema = z.object({
     { message: "Event date must be today or in the future" },
   ),
   time: z.string().regex(timeRegex, "Invalid time format (Use HH:MM AM/PM)"),
-  price: z.coerce.number().min(0), 
+  price: z.coerce.number().min(0),
   venue: z.string().min(3).max(255),
-  total: z.coerce.number().int().min(1), 
+  total: z.coerce.number().int().min(1),
 });
 
 EventRouter.post(
@@ -68,6 +68,56 @@ EventRouter.post(
     }
   }
 );
+
+EventRouter.get("/", async (req: Request, res: Response) => {
+  try {
+    const page = Math.max(1, parseInt(req.query.page as string) || 1);
+    const limit = Math.max(1, Math.min(100, parseInt(req.query.limit as string) || 10));
+    const skip = (page - 1) * limit;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const filter = { date: { $gte: today }, isDeleted: { $ne: true } };
+
+    const [events, totalEvents] = await Promise.all([
+      EventModel.find(filter).select("-tenantId").sort({ date: 1 }).skip(skip).limit(limit),
+      EventModel.countDocuments(filter),
+    ]);
+
+    return res.json({
+      events,
+      pagination: {
+        totalEvents,
+        currentPage: page,
+        totalPages: Math.ceil(totalEvents / limit),
+      },
+      msg: "Events fetched successfully!!",
+    });
+  } catch (e) {
+    return res.status(500).json({ msg: "Internal server error during event fetch" });
+  }
+});
+
+EventRouter.get("/:id", async (req: Request, res: Response) => {
+  try {
+    const id = req.params.id as string;
+    if (!Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ msg: "Invalid ID format" });
+    }
+    const queryId = new Types.ObjectId(id);
+    const eventDetails = await EventModel.findOne({
+      _id: queryId,
+      isDeleted: { $ne: true }
+    }).select("-tenantId");
+
+    if (!eventDetails) {
+      return res.status(404).json({ msg: "Event not found!!" });
+    }
+    return res.json({ eventDetails, msg: "Event Details fetched successfully!!" });
+  } catch (e) {
+    return res.status(500).json({ msg: "Internal server error" });
+  }
+});
 
 EventRouter.put(
   "/:id",
@@ -126,23 +176,31 @@ EventRouter.put(
   }
 );
 
-EventRouter.get("/:id", async (req: Request, res: Response) => {
-  try {
-    const id = req.params.id as string;
-    if (!Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ msg: "Invalid ID format" });
+EventRouter.delete(
+  "/:id",
+  userMiddleware as RequestHandler,
+  TenantMiddleware as RequestHandler,
+  authorize(["Admin", "Moderator"]) as RequestHandler,
+  async (req: Request, res: Response) => {
+    try {
+      if (!req.userId || !req.tenantId) {
+        return res.status(401).json({ msg: "Authentication/Tenant context missing!" });
+      }
+      const id = req.params.id as string;
+      if (!Types.ObjectId.isValid(id)) {
+        return res.status(400).json({ msg: "Invalid ID format" });
+      }
+      const queryId = new Types.ObjectId(id);
+      const deletedEvent = await EventModel.findOneAndUpdate(
+        { _id: queryId, tenantId: req.tenantId },
+        { $set: { isDeleted: true } }
+      );
+      if (!deletedEvent) {
+        return res.status(404).json({ msg: "Event not found!!" });
+      }
+      return res.json({ msg: "Event deleted successfully!!" });
+    } catch (e) {
+      return res.status(500).json({ msg: "Internal server error" });
     }
-    const queryId = new Types.ObjectId(id);
-    const eventDetails = await EventModel.findOne({
-      _id: queryId,
-      isDeleted: { $ne: true }
-    }).select("-tenantId");
-    
-    if (!eventDetails) {
-      return res.status(404).json({ msg: "Event not found!!" });
-    }
-    return res.json({ eventDetails, msg: "Event Details fetched successfully!!" });
-  } catch (e) {
-    return res.status(500).json({ msg: "Internal server error" });
   }
-});
+);
