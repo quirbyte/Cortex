@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { PlusIcon, Loader2 } from "lucide-react";
 import OrgCard from "@/cards/OrgCard";
 import CreateOrgCard from "@/cards/CreateOrgCard";
+import DeleteOrgModal from "@/cards/DeleteOrgModal";
 import apiClient from "@/api/apiClient";
 import { useNavigate } from "react-router-dom";
 
@@ -24,6 +25,7 @@ export default function Organizations() {
 
   const [isDark, setIsDark] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
+  const [orgToDelete, setOrgToDelete] = useState<Organization | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [orgs, setOrgs] = useState<Organization[]>([]);
   const [isOrgUpdated, setIsOrgUpdated] = useState(false);
@@ -75,6 +77,25 @@ export default function Organizations() {
     }
   };
 
+  const handleDecommission = async () => {
+    const targetId = orgToDelete?.tenant?._id;
+    const targetSlug = orgToDelete?.tenant?.slug;
+
+    if (!targetId || !targetSlug) return;
+
+    try {
+      await apiClient.delete(`/tenant/delete/${targetId}`, {
+        headers: {
+          "tenant-slug": targetSlug,
+        },
+      });
+      setIsOrgUpdated(true);
+      setOrgToDelete(null);
+    } catch (error) {
+      console.error("Failed to purge entity:", error);
+    }
+  };
+
   const handleRedirect = (slug: string) => {
     if (slug) navigate(`/dashboard/${slug}`);
   };
@@ -109,6 +130,22 @@ export default function Organizations() {
               }}
               onCreate={handleEstablish}
               error={createError}
+            />
+          </div>
+        </div>
+      )}
+
+      {orgToDelete && (
+        <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
+          <div
+            className="absolute inset-0 bg-red-950/20 dark:bg-red-950/40 backdrop-blur-md animate-in fade-in duration-500"
+            onClick={() => setOrgToDelete(null)}
+          />
+          <div className="relative z-101 w-full max-w-md animate-in zoom-in-95 duration-300">
+            <DeleteOrgModal
+              name={orgToDelete.tenant?.name || "Unknown Entity"}
+              onClose={() => setOrgToDelete(null)}
+              onConfirm={handleDecommission}
             />
           </div>
         </div>
@@ -162,6 +199,7 @@ export default function Organizations() {
                 name={org.tenant?.name || "Access Denied"}
                 role={org.role}
                 handleRedirect={() => handleRedirect(org.tenant?.slug || "")}
+                onDelete={() => setOrgToDelete(org)}
               />
             ))}
           </div>

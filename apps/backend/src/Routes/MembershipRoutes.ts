@@ -11,7 +11,7 @@ MembershipRouter.post(
   "/add",
   userMiddleware,
   TenantMiddleware,
-  authorize(["admin"]),
+  authorize(["Admin"]),
   async (req: Request, res: Response) => {
     try {
       if (!req.userId || !req.tenantId) {
@@ -56,7 +56,7 @@ MembershipRouter.get(
   "/getAllMembers",
   userMiddleware,
   TenantMiddleware,
-  authorize(["admin"]),
+  authorize(["Admin"]),
   async (req: Request, res: Response) => {
     try {
       if (!req.userId || !req.tenantId) {
@@ -85,7 +85,7 @@ MembershipRouter.delete(
   "/remove",
   userMiddleware,
   TenantMiddleware,
-  authorize(["admin"]),
+  authorize(["Admin"]),
   async (req: Request, res: Response) => {
     try {
       if (!req.userId || !req.tenantId) {

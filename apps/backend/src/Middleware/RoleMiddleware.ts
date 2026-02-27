@@ -13,7 +13,6 @@ export const authorize = (roles: string[]) => {
         userId: req.userId,
         tenantId: req.tenantId,
       });
-
       if (!membership || !roles.includes(membership.role)) {
         return res.status(403).json({
           msg: "Access Denied: You do not have a valid account verified by this organization.",

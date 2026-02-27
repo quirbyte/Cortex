@@ -87,7 +87,7 @@ TenantRouter.put(
   "/update/:id",
   userMiddleware,
   TenantMiddleware,
-  authorize(["admin", "moderator"]),
+  authorize(["Admin", "moderator"]),
   async (req: Request, res: Response) => {
     try {
       if (!req.tenantId || !req.userId) {
@@ -163,7 +163,7 @@ TenantRouter.delete(
   "/delete/:id",
   userMiddleware,
   TenantMiddleware,
-  authorize(["admin"]),
+  authorize(["Admin"]),
   async (req: Request, res: Response) => {
     try {
       if (!req.tenantId || !req.userId) {

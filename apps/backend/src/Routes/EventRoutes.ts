@@ -31,7 +31,7 @@ const createEventSchema = z.object({
   total: z.number().int().min(1),
 });
 
-EventRouter.post("/", userMiddleware, TenantMiddleware,authorize(["admin","moderator"]), async (req: AuthRequest, res: Response) => {
+EventRouter.post("/", userMiddleware, TenantMiddleware,authorize(["Admin","Moderator"]), async (req: AuthRequest, res: Response) => {
   if (!req.userId || !req.tenantId) {
     return res.status(401).json({ msg: "Authentication/Tenant context missing" });
   }
@@ -113,7 +113,7 @@ EventRouter.get("/:id", async (req: Request, res: Response) => {
   }
 });
 
-EventRouter.put("/:id", userMiddleware, TenantMiddleware,authorize(["admin","moderator"]), async (req: AuthRequest, res: Response) => {
+EventRouter.put("/:id", userMiddleware, TenantMiddleware,authorize(["Admin","Moderator"]), async (req: AuthRequest, res: Response) => {
   try {
     if (!req.userId || !req.tenantId) {
       return res.status(401).json({ msg: "Authentication/Tenant context missing" });
@@ -156,7 +156,7 @@ EventRouter.put("/:id", userMiddleware, TenantMiddleware,authorize(["admin","mod
   }
 });
 
-EventRouter.delete("/:id", userMiddleware, TenantMiddleware,authorize(["admin","moderator"]), async (req: AuthRequest, res: Response) => {
+EventRouter.delete("/:id", userMiddleware, TenantMiddleware,authorize(["Admin","Moderator"]), async (req: AuthRequest, res: Response) => {
   try {
     if (!req.userId || !req.tenantId) {
       return res.status(401).json({ msg: "Authentication/Tenant context missing!" });

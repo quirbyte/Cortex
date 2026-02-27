@@ -5,16 +5,17 @@ import {
   ZapIcon,
   HeartHandshakeIcon,
   ArrowUpRight,
-  ShieldCheckIcon,
+  Trash2Icon,
 } from "lucide-react";
 
 interface OrgCardProps {
   name: string;
   role: "Admin" | "Moderator" | "Volunteer";
   handleRedirect: () => void;
+  onDelete?: () => void;
 }
 
-export default function OrgCard({ name, role, handleRedirect }: OrgCardProps) {
+export default function OrgCard({ name, role, handleRedirect, onDelete }: OrgCardProps) {
   const getRoleTheme = () => {
     switch (role) {
       case "Admin":
@@ -63,7 +64,6 @@ export default function OrgCard({ name, role, handleRedirect }: OrgCardProps) {
           <div
             className={`absolute top-0 right-0 w-full h-full bg-linear-to-br ${theme.glow} via-transparent to-transparent opacity-10 dark:opacity-30 group-hover:opacity-40 dark:group-hover:opacity-60 transition-opacity duration-700`}
           />
-          <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.03] mix-blend-overlay pointer-events-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
         </div>
 
         <div className="relative z-20 h-full flex flex-col justify-between p-7">
@@ -74,9 +74,18 @@ export default function OrgCard({ name, role, handleRedirect }: OrgCardProps) {
                 {role}
               </span>
             </div>
-            <div className="text-black/10 dark:text-white/10 group-hover:text-black/30 dark:group-hover:text-white/30 transition-colors">
-              <ShieldCheckIcon size={18} strokeWidth={1} />
-            </div>
+
+            {role === "Admin" && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete?.();
+                }}
+                className="group/delete h-8 w-8 flex items-center justify-center rounded-xl bg-red-500/5 hover:bg-red-500/20 text-red-500/20 hover:text-red-500 transition-all duration-300 border border-transparent hover:border-red-500/30"
+              >
+                <Trash2Icon size={14} className="group-hover/delete:scale-110 transition-transform" />
+              </button>
+            )}
           </div>
 
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full px-8 text-center opacity-[0.03] dark:opacity-[0.02] group-hover:opacity-[0.07] dark:group-hover:opacity-[0.05] transition-opacity duration-700 pointer-events-none">
@@ -118,10 +127,6 @@ export default function OrgCard({ name, role, handleRedirect }: OrgCardProps) {
               <div className="absolute inset-0 bg-zinc-800 dark:bg-zinc-200 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-500 ease-[cubic-bezier(0.19,1,0.22,1)]" />
             </Button>
           </div>
-        </div>
-
-        <div className="absolute inset-0 z-30 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-1000">
-          <div className="absolute -inset-full aspect-square bg-linear-to-tr from-transparent via-black/5 dark:via-white/5 to-transparent rotate-45 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out" />
         </div>
       </Card>
     </div>

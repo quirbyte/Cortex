@@ -167,19 +167,19 @@ UserRouter.delete(
 
       const personalMemberships = await MembershipModel.find({
         userId,
-        role: "admin",
+        role: "Admin",
       });
 
       for (const membership of personalMemberships) {
-        const adminCount = await MembershipModel.countDocuments({
+        const AdminCount = await MembershipModel.countDocuments({
           tenantId: membership.tenantId,
-          role: "admin",
+          role: "Admin",
         });
 
-        if (adminCount <= 1) {
+        if (AdminCount <= 1) {
           await session.abortTransaction();
           return res.status(400).json({
-            msg: "Cannot delete account. You are the sole admin of one or more organizations.",
+            msg: "Cannot delete account. You are the sole Admin of one or more organizations.",
           });
         }
       }
