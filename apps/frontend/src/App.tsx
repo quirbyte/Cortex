@@ -10,6 +10,7 @@ import Overview from "./pages/dashboard/pages/Overview";
 import Events from "./pages/dashboard/pages/Events";
 import Organizations from "./pages/dashboard/pages/Organizations";
 import MyBookings from "./pages/dashboard/pages/MyBookings";
+import TenantDashboard from "./pages/tenant/TenantDashboard";
 
 export default function App() {
   return (
@@ -28,6 +29,9 @@ export default function App() {
             <Route path="events" element={<Events/>} />
             <Route path="my-bookings" element={<MyBookings/>} />
             <Route path="my-orgs" element={<Organizations/>} />
+            <Route path=":slug" element={<TenantDashboard/>}>
+
+            </Route>
           </Route>
         </Route>
         <Route path="/" element={<Navigate to="/login" />} />
