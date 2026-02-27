@@ -1,6 +1,6 @@
-import { Outlet } from "react-router-dom";
-import TenantProvider from "@/components/core/TenantProvider";
+import { useTenant } from "@/hooks/useTenant"
 
 export default function TenantDashboard(){
-    return <TenantProvider><Outlet/></TenantProvider>
+    const TenantObj = useTenant();
+    return <div className="text-foreground" >{TenantObj.role}</div>
 }

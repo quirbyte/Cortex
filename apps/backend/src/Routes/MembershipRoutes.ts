@@ -4,6 +4,7 @@ import { TenantMiddleware } from "../Middleware/TenantMiddleware";
 import { userMiddleware } from "../Middleware/UserMiddleware";
 import { MembershipModel } from "../Models/Membership";
 import { UserModel } from "../Models/User";
+import { Types } from "mongoose";
 
 export const MembershipRouter = Router();
 
@@ -143,6 +144,43 @@ MembershipRouter.get(
     } catch (e) {
       return res.status(500).json({
         msg: "Failed to Fetch Org Details..",
+      });
+    }
+  },
+);
+
+MembershipRouter.get(
+  "/my-role/:tenantId",
+  userMiddleware,
+  async (req: Request, res: Response) => {
+    try {
+      if (!req.userId) {
+        return res.status(404).json({
+          msg: "User not verified!!",
+        });
+      }
+      const TenantFromReq = req.params.tenantId;
+      if (!Types.ObjectId.isValid(TenantFromReq as string)) {
+        return res.status(400).json({ msg: "Invalid ID format" });
+      }
+      const tenantId = new Types.ObjectId(TenantFromReq as string);
+      const matchingMembership = await MembershipModel.findOne({
+        tenantId,
+        userId:req.userId
+      });
+      if(!matchingMembership){
+        return res.status(403).json({
+          msg: "Membership not found!!"
+        })
+      }
+      const role = matchingMembership?.role;
+      return res.json({
+        role,
+        msg: "Role fetched successfully!!"
+      });
+    } catch (e) {
+      return res.status(500).json({
+        msg: "Cant fetch role!!",
       });
     }
   },

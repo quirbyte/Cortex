@@ -10,6 +10,7 @@ import Overview from "./pages/dashboard/pages/Overview";
 import Events from "./pages/dashboard/pages/Events";
 import Organizations from "./pages/dashboard/pages/Organizations";
 import MyBookings from "./pages/dashboard/pages/MyBookings";
+import TenantLayout from "./pages/tenant/TenantLayout";
 import TenantDashboard from "./pages/tenant/TenantDashboard";
 
 export default function App() {
@@ -25,12 +26,12 @@ export default function App() {
         <Route element={<ProtectedRoute />}>
           <Route path="/dashboard" element={<UserDashboard />}>
             <Route path="user-settings" element={<UserSettings />} />
-            <Route path="overview" element={<Overview/>} />
-            <Route path="events" element={<Events/>} />
-            <Route path="my-bookings" element={<MyBookings/>} />
-            <Route path="my-orgs" element={<Organizations/>} />
-            <Route path=":slug" element={<TenantDashboard/>}>
-
+            <Route path="overview" element={<Overview />} />
+            <Route path="events" element={<Events />} />
+            <Route path="my-bookings" element={<MyBookings />} />
+            <Route path="my-orgs" element={<Organizations />} />
+            <Route path=":slug" element={<TenantLayout />}>
+            <Route path="home" element={<TenantDashboard/>} />
             </Route>
           </Route>
         </Route>

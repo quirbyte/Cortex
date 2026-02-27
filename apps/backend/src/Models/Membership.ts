@@ -20,7 +20,7 @@ const MembershipSchema = new Schema<InterfaceMembership>(
       required: true,
       index: true,
     },
-    role: { type: String, enum: ["Admin", "User","Volunteer"], default: "Volunteer" },
+    role: { type: String, enum: ["Admin", "Moderator","Volunteer"], default: "Volunteer" },
   },
   { timestamps: true },
 );

@@ -12,6 +12,12 @@ interface InterfaceTenantContext {
   tenant: InterfaceTenant | null;
   isLoading: boolean;
   error: string | null;
+  role: string | null;
+}
+
+interface InterfaceGetRole{
+  role: "Admin" | "Moderator" | "Volunteer";
+  msg: string;
 }
 
 export const TenantContext = createContext<InterfaceTenantContext | null>(null);
@@ -23,27 +29,39 @@ export default function TenantProvider({
 }) {
   const [tenant, setTenant] = useState<InterfaceTenant | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const {slug} = useParams();
+  const [error, setError] = useState<string|null>(null);
+  const [role, setRole] = useState<string|null>("Volunteer");
+  const { slug } = useParams();
 
-  useEffect(()=>{
-    const fetchData = async () =>{
-        try{
-            setError(null);
-            const response = await apiClient.get(`/tenant/public/${slug}`);
-            setTenant(response.data);
-        }catch(err:any){
-            setError(err.msg);
-        }
-        finally{
-            setIsLoading(false);
-        }
+  useEffect(() => {
+  const fetchData = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const tenantRes = await apiClient.get(`/tenant/public/${slug}`);
+      setTenant(tenantRes.data);
+
+      const roleRes = await apiClient.get<InterfaceGetRole>(
+        `/memberships/my-role/${tenantRes.data._id}`
+      );
+      
+      setRole(roleRes.data.role);
+    } catch (err: any) {
+      if (err.response?.status === 403) {
+        setRole(null);
+        setError("You are not a member of this organization.");
+      } else {
+        setError(err.response?.data?.msg || "Something went wrong");
+      }
+    } finally {
+      setIsLoading(false);
     }
-    fetchData();
-  },[slug]);
+  };
 
+  if (slug) fetchData();
+}, [slug]);
   return (
-    <TenantContext.Provider value={{ tenant, isLoading, error }}>
+    <TenantContext.Provider value={{ tenant, isLoading, error, role }}>
       {children}
     </TenantContext.Provider>
   );
