@@ -178,7 +178,7 @@ export default function Overview() {
 
             <h1 className="text-4xl sm:text-5xl md:text-8xl font-black tracking-tighter text-foreground uppercase leading-[0.9] wrap-break-word">
               Control <br />
-              <span className="text-green-950 dark:text-muted-foreground/30">
+              <span className="text-green-950 dark:text-muted-foreground/20">
                 Dashboard
               </span>
             </h1>

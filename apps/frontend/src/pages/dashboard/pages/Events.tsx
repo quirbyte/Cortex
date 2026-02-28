@@ -111,7 +111,7 @@ export default function Events() {
 
               <h1 className="text-6xl md:text-8xl font-black tracking-tighter text-foreground uppercase leading-[0.85] selection:bg-primary selection:text-black">
                 Explore <br />
-                <span className="text-zinc-300 dark:text-white/10 transition-colors duration-700">
+                <span className="text-green-950 dark:text-muted-foreground/20 transition-colors duration-700">
                   Upcoming
                 </span>
               </h1>
