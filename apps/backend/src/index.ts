@@ -14,7 +14,12 @@ const app = express();
 
 app.use(express.json());
 
-app.use(cors());
+app.use(cors({
+  origin: "https://cortex.vercel.app",
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  allowedHeaders: ["Content-Type", "token", "tenant-slug"],
+  credentials: true
+}));
 
 app.use("/api/v1/user", UserRouter);
 app.use("/api/v1/tenant", TenantRouter);
