@@ -1,5 +1,5 @@
 import { Router, Request, Response } from "express";
-import { Types } from "mongoose";
+import mongoose, { Types } from "mongoose";
 import { userMiddleware } from "../Middleware/UserMiddleware";
 import { TenantMiddleware } from "../Middleware/TenantMiddleware";
 import { TenantModel } from "../Models/Tenant";
@@ -34,6 +34,7 @@ TenantRouter.get(
         });
       }
       let eventIdArray: Types.ObjectId[] = [];
+      const start = Date.now();
       const [activeEventsArray, totalMembers] = await Promise.all([
         EventModel.find({
           tenantId: req.tenantId,
@@ -44,6 +45,9 @@ TenantRouter.get(
         }),
       ]);
 
+      const dbStatus =
+        mongoose.connection.readyState === 1 ? "Connected" : "Disconnected";
+
       let ticketsSold = 0;
       for (const event of activeEventsArray) {
         ticketsSold += event.ticketDetails.sold;
@@ -53,19 +57,31 @@ TenantRouter.get(
       if (eventIdArray.length <= 0) {
         recentActivities = [];
       } else {
-        recentActivities = await BookingModel.find({
+        recentActivities = (await BookingModel.find({
           event_id: { $in: eventIdArray },
         })
           .sort({ createdAt: -1 })
           .limit(5)
-          .populate("user_id", "name").populate("event_id", "name") as unknown as InterfaceRecentActivity[];
+          .populate("user_id", "name")
+          .populate(
+            "event_id",
+            "name",
+          )) as unknown as InterfaceRecentActivity[];
       }
+      const latency = Date.now() - start;
+      const systemHealth = {
+        status:
+          dbStatus === "Connected" && latency < 500 ? "Healthy" : "Degraded",
+        latency: `${latency}ms`,
+        uptime: `${(process.uptime() / 3600).toFixed(2)}h`,
+      };
       const activeEvents = activeEventsArray.length;
       return res.json({
         activeEvents,
         totalMembers,
         ticketsSold,
         recentActivities,
+        systemHealth,
         msg: "Tenant Analytics fetched successfully",
       });
     } catch (e) {

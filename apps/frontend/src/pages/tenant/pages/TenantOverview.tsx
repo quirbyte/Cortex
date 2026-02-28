@@ -14,6 +14,11 @@ interface dashboardDataInterface {
     event_id: { name: string };
     createdAt: string;
   }[];
+  systemHealth: {
+    status: string;
+    latency: string;
+    uptime: string;
+  };
 }
 
 export default function TenantOverview() {
@@ -47,7 +52,7 @@ export default function TenantOverview() {
             headers: {
               "tenant-slug": tenant.slug,
             },
-          },
+          }
         );
         setDashboardData(response.data);
       } catch (err) {
@@ -80,9 +85,13 @@ export default function TenantOverview() {
     },
     {
       label: "System Health",
-      value: "99.9%",
+      value: dashboardData?.systemHealth.status ?? "Checking...",
+      subValue: dashboardData?.systemHealth.latency,
       icon: Activity,
-      color: "text-orange-500",
+      color:
+        dashboardData?.systemHealth.status === "Healthy"
+          ? "text-emerald-500"
+          : "text-orange-500",
     },
   ];
 
@@ -103,16 +112,35 @@ export default function TenantOverview() {
             key={stat.label}
             className={cn(
               "relative group overflow-hidden rounded-[2rem] border border-border bg-card/50 backdrop-blur-sm p-6 transition-all hover:bg-card hover:border-primary/50",
-              isLoading && "animate-pulse",
+              isLoading && "animate-pulse"
             )}
           >
-            <stat.icon className={cn("mb-4 h-5 w-5", stat.color)} />
+            <stat.icon
+              className={cn(
+                "mb-4 h-5 w-5",
+                stat.color,
+                stat.label === "System Health" &&
+                  dashboardData?.systemHealth.status === "Healthy" &&
+                  "animate-pulse"
+              )}
+            />
             <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">
               {stat.label}
             </p>
-            <h3 className="text-3xl font-black tracking-tighter text-foreground">
-              {isLoading ? "..." : stat.value.toLocaleString()}
-            </h3>
+            <div className="flex items-baseline gap-2">
+              <h3 className="text-3xl font-black tracking-tighter text-foreground">
+                {isLoading ? "..." : stat.value.toLocaleString()}
+              </h3>
+              {stat.subValue && !isLoading && (
+                <span className="text-[10px] font-bold text-muted-foreground/40 font-mono">
+                  {stat.subValue}
+                </span>
+              )}
+            </div>
+            {stat.label === "System Health" &&
+              dashboardData?.systemHealth.status === "Healthy" && (
+                <div className="absolute top-6 right-6 h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
+              )}
           </div>
         ))}
       </div>
@@ -135,7 +163,7 @@ export default function TenantOverview() {
               dashboardData.recentActivities.map((activity, index) => (
                 <div
                   key={index}
-                  className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/5"
+                  className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/5 transition-colors hover:bg-white/10"
                 >
                   <div className="flex flex-col">
                     <span className="text-sm font-bold text-foreground">
