@@ -1,6 +1,6 @@
 import { Router, Request, Response, RequestHandler } from "express";
 import { TenantMiddleware } from "../Middleware/TenantMiddleware";
-import { EventModel } from "../Models/Event";
+import { EventModel, DEFAULT_EVENT_BANNER } from "../Models/Event";
 import { userMiddleware } from "../Middleware/UserMiddleware";
 import z from "zod";
 import { Types } from "mongoose";
@@ -8,8 +8,6 @@ import { authorize } from "../Middleware/RoleMiddleware";
 import { upload } from "../config/cloudinary";
 
 export const EventRouter = Router();
-
-const timeRegex = /^(0?[1-9]|1[0-2]):[0-5]\d\s?(?:AM|PM)$/i;
 
 const createEventSchema = z.object({
   name: z.string().min(3).max(100),
@@ -21,25 +19,62 @@ const createEventSchema = z.object({
     },
     { message: "Event date must be today or in the future" },
   ),
-  time: z.string().regex(timeRegex, "Invalid time format (Use HH:MM AM/PM)"),
+  time: z.string().regex(
+    /^(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d)?$|^(0?[1-9]|1[0-2]):[0-5]\d\s?(?:AM|PM)$/i, 
+    "Invalid time format"
+  ),
   price: z.coerce.number().min(0),
   venue: z.string().min(3).max(255),
   total: z.coerce.number().int().min(1),
 });
+
+EventRouter.get(
+  "/tenant-events",
+  userMiddleware as RequestHandler,
+  TenantMiddleware as RequestHandler,
+  authorize(["Admin", "Moderator", "Volunteer"]) as RequestHandler,
+  async (req: Request, res: Response) => {
+    try {
+      if (!req.tenantId) {
+        return res.status(401).json({ msg: "Tenant context missing" });
+      }
+
+      const events = await EventModel.find({
+        tenantId: req.tenantId,
+        isDeleted: { $ne: true },
+      }).sort({ date: 1 });
+
+      return res.json({ events, msg: "Tenant Events fetched successfully" });
+    } catch (e) {
+      return res.status(500).json({ msg: "Internal server error" });
+    }
+  },
+);
 
 EventRouter.post(
   "/",
   userMiddleware as RequestHandler,
   TenantMiddleware as RequestHandler,
   authorize(["Admin", "Moderator"]) as RequestHandler,
-  upload.single("banner") as RequestHandler,
+  (req: any, res: any, next: any) => {
+    upload.single("banner")(req, res, (err: any) => {
+      if (err) {
+        return res.status(400).json({
+          msg: "File upload failed",
+          error: err.message
+        });
+      }
+      next();
+    });
+  },
   async (req: Request, res: Response) => {
-    if (!req.userId || !req.tenantId) {
-      return res.status(401).json({ msg: "Authentication/Tenant context missing" });
-    }
-
     try {
+      if (!req.tenantId) {
+        return res.status(400).json({ msg: "Tenant ID is required" });
+      }
+
       const validation = createEventSchema.safeParse(req.body);
+      
       if (!validation.success) {
         return res.status(400).json({
           msg: "Validation failed",
@@ -49,22 +84,29 @@ EventRouter.post(
 
       const { name, venue, date, time, price, total } = validation.data;
 
-      const newEvent = await EventModel.create({
+      const eventData: any = {
         name,
         tenantId: req.tenantId,
         date,
         time,
         venue,
-        imageRef: req.file ? req.file.path : "",
-        ticketDetails: { price, total, sold: 0 },
-      });
+        imageRef: req.file ? req.file.path : DEFAULT_EVENT_BANNER,
+        ticketDetails: {
+          price,
+          total,
+          sold: 0,
+        },
+        isDeleted: false,
+      };
 
-      return res.status(201).json({
-        msg: "Event created successfully!!",
-        eventId: newEvent._id,
+      const newEvent = await EventModel.create(eventData);
+
+      return res.status(201).json({ 
+        msg: "Event created successfully!!", 
+        eventId: (newEvent as any)._id 
       });
-    } catch (e) {
-      return res.status(500).json({ msg: "Internal server error during event creation" });
+    } catch (e: any) {
+      return res.status(500).json({ msg: "Internal server error" });
     }
   }
 );
@@ -72,7 +114,10 @@ EventRouter.post(
 EventRouter.get("/", async (req: Request, res: Response) => {
   try {
     const page = Math.max(1, parseInt(req.query.page as string) || 1);
-    const limit = Math.max(1, Math.min(100, parseInt(req.query.limit as string) || 10));
+    const limit = Math.max(
+      1,
+      Math.min(100, parseInt(req.query.limit as string) || 10),
+    );
     const skip = (page - 1) * limit;
 
     const today = new Date();
@@ -80,7 +125,11 @@ EventRouter.get("/", async (req: Request, res: Response) => {
     const filter = { date: { $gte: today }, isDeleted: { $ne: true } };
 
     const [events, totalEvents] = await Promise.all([
-      EventModel.find(filter).select("-tenantId").sort({ date: 1 }).skip(skip).limit(limit),
+      EventModel.find(filter)
+        .select("-tenantId")
+        .sort({ date: 1 })
+        .skip(skip)
+        .limit(limit),
       EventModel.countDocuments(filter),
     ]);
 
@@ -94,7 +143,7 @@ EventRouter.get("/", async (req: Request, res: Response) => {
       msg: "Events fetched successfully!!",
     });
   } catch (e) {
-    return res.status(500).json({ msg: "Internal server error during event fetch" });
+    return res.status(500).json({ msg: "Internal server error" });
   }
 });
 
@@ -107,13 +156,16 @@ EventRouter.get("/:id", async (req: Request, res: Response) => {
     const queryId = new Types.ObjectId(id);
     const eventDetails = await EventModel.findOne({
       _id: queryId,
-      isDeleted: { $ne: true }
+      isDeleted: { $ne: true },
     }).select("-tenantId");
 
     if (!eventDetails) {
       return res.status(404).json({ msg: "Event not found!!" });
     }
-    return res.json({ eventDetails, msg: "Event Details fetched successfully!!" });
+    return res.json({
+      eventDetails,
+      msg: "Event Details fetched successfully!!",
+    });
   } catch (e) {
     return res.status(500).json({ msg: "Internal server error" });
   }
@@ -124,7 +176,17 @@ EventRouter.put(
   userMiddleware as RequestHandler,
   TenantMiddleware as RequestHandler,
   authorize(["Admin", "Moderator"]) as RequestHandler,
-  upload.single("banner") as RequestHandler,
+  (req: any, res: any, next: any) => {
+    upload.single("banner")(req, res, (err: any) => {
+      if (err) {
+        return res.status(400).json({
+          msg: "File upload failed",
+          error: err.message
+        });
+      }
+      next();
+    });
+  },
   async (req: Request, res: Response) => {
     try {
       if (!req.userId || !req.tenantId) {
@@ -163,17 +225,20 @@ EventRouter.put(
       const updatedEvent = await EventModel.findOneAndUpdate(
         { _id: queryId, tenantId: req.tenantId },
         { $set: updateData },
-        { new: true }
+        { new: true },
       ).select("-tenantId");
 
       if (!updatedEvent) {
         return res.status(404).json({ msg: "Event not found or unauthorized" });
       }
-      return res.json({ msg: "Event updated successfully!", updated_event: updatedEvent });
+      return res.json({
+        msg: "Event updated successfully!",
+        updated_event: updatedEvent,
+      });
     } catch (e) {
-      return res.status(500).json({ msg: "Internal server error during event update" });
+      return res.status(500).json({ msg: "Internal server error" });
     }
-  }
+  },
 );
 
 EventRouter.delete(
@@ -193,7 +258,7 @@ EventRouter.delete(
       const queryId = new Types.ObjectId(id);
       const deletedEvent = await EventModel.findOneAndUpdate(
         { _id: queryId, tenantId: req.tenantId },
-        { $set: { isDeleted: true } }
+        { $set: { isDeleted: true } },
       );
       if (!deletedEvent) {
         return res.status(404).json({ msg: "Event not found!!" });
@@ -202,5 +267,5 @@ EventRouter.delete(
     } catch (e) {
       return res.status(500).json({ msg: "Internal server error" });
     }
-  }
+  },
 );
