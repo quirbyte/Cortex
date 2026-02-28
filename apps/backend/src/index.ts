@@ -15,7 +15,7 @@ const app = express();
 app.use(express.json());
 
 app.use(cors({
-  origin: "https://cortex.vercel.app",
+  origin: "https://cortex-frontend-rho.vercel.app",
   methods: ["GET", "POST", "PUT", "DELETE"],
   allowedHeaders: ["Content-Type", "token", "tenant-slug"],
   credentials: true
