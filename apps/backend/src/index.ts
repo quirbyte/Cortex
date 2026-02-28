@@ -29,17 +29,18 @@ const MONGO_URL = process.env.MONGO_URL || "";
 const startServer = async () => {
   try {
     if (!MONGO_URL || !USER_SECRET) {
-      throw new Error("Mongo Url or jwt secret mssing!!");
+      throw new Error("Mongo Url or jwt secret missing!!");
     }
+
+    app.listen(Number(PORT), "0.0.0.0", () => {
+      console.log(`Cortex server is running on port ${PORT}`);
+    });
 
     await mongoose.connect(MONGO_URL);
     console.log("Connected to Db....");
 
-    app.listen(PORT, () => {
-      console.log(`Cortex server is ruuning on port ${PORT}`);
-    });
   } catch (e) {
-    console.error("❌ Database connection failed:", e);
+    console.error("❌ Startup failed:", e);
     process.exit(1);
   }
 };

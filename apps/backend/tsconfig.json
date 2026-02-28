@@ -4,14 +4,14 @@
     "outDir": "./dist",
     "baseUrl": ".",
     "target": "es2020",
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
     "lib": ["esnext"],
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "typeRoots": [
       "./src/types",
-      "../../node_modules/@types"
+      "./node_modules/@types"
     ],
     "types": ["node", "express"],
     "strict": true,
