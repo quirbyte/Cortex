@@ -1,20 +1,46 @@
 import { useState, useEffect, useRef } from "react";
-import { ScanQrCode, ShieldCheck, Loader2, CameraOff } from "lucide-react";
+import { ScanQrCode, ShieldCheck, Loader2, CameraOff, ChevronRight, Ticket, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import QrScanner from "qr-scanner";
 import { useTenant } from "@/hooks/useTenant";
 import apiClient from "@/api/apiClient";
 import { cn } from "@/lib/utils";
 
+const AUTOFILL_FIX = "autofill:shadow-[0_0_0_1000px_#f9fafb_inset] dark:autofill:shadow-[0_0_0_1000px_#09090b_inset] autofill:[-webkit-text-fill-color:#18181b] dark:autofill:[-webkit-text-fill-color:white] transition-colors duration-[50000s] ease-in-out";
+
+interface EventInterface {
+  _id: string;
+  name: string;
+  date: string;
+}
+
 export default function VerifyTickets() {
   const { tenant } = useTenant();
+  const [events, setEvents] = useState<EventInterface[]>([]);
+  const [selectedEventId, setSelectedEventId] = useState<string>("");
   const [ticketId, setTicketId] = useState("");
   const [isScanning, setIsScanning] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isEventsLoading, setIsEventsLoading] = useState(true);
   const [scanResult, setScanResult] = useState<{ success: boolean; msg: string } | null>(null);
   
   const videoRef = useRef<HTMLVideoElement>(null);
   const qrScannerRef = useRef<QrScanner | null>(null);
+
+  useEffect(() => {
+    const fetchEvents = async () => {
+      if (!tenant?.slug) return;
+      try {
+        const res = await apiClient.get("/events/tenant-events");
+        setEvents(res.data.events || []);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setIsEventsLoading(false);
+      }
+    };
+    fetchEvents();
+  }, [tenant?.slug]);
 
   const stopScanner = () => {
     if (qrScannerRef.current) {
@@ -26,12 +52,14 @@ export default function VerifyTickets() {
   };
 
   const handleValidation = async (id: string) => {
-    if (!tenant?.slug || !id.trim()) return;
+    if (!tenant?.slug || !selectedEventId || !id.trim()) return;
     
     setIsLoading(true);
+    setScanResult(null);
     try {
       const response = await apiClient.post("/tenant/verify-ticket", {
-        ticketId: id.trim()
+        ticketId: id.trim(),
+        eventId: selectedEventId
       }, {
         headers: { "tenant-slug": tenant.slug }
       });
@@ -48,16 +76,15 @@ export default function VerifyTickets() {
   };
 
   const startScanner = async () => {
-    if (!videoRef.current) return;
+    if (!videoRef.current || !selectedEventId) return;
     setScanResult(null);
     setIsScanning(true);
 
     const scanner = new QrScanner(
       videoRef.current,
       (result) => {
-        const decodedText = result.data;
         stopScanner();
-        handleValidation(decodedText);
+        handleValidation(result.data);
       },
       {
         preferredCamera: "environment",
@@ -80,73 +107,150 @@ export default function VerifyTickets() {
     return () => stopScanner();
   }, []);
 
+  if (!selectedEventId) {
+    return (
+      <div className="max-w-2xl mx-auto py-20 px-4 space-y-10 animate-in fade-in duration-700">
+        <div className="text-center space-y-3">
+          <div className="inline-flex p-3 rounded-2xl bg-primary/10 text-primary mb-2">
+            <Ticket size={32} />
+          </div>
+          <h2 className="text-4xl font-black uppercase tracking-tighter italic">Select Target Event</h2>
+          <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-zinc-400 dark:text-white/20">
+            {tenant?.name} • Verification Protocol
+          </p>
+        </div>
+
+        <div className="grid gap-4">
+          {isEventsLoading ? (
+            Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="h-20 rounded-3xl bg-zinc-100 dark:bg-white/5 animate-pulse" />
+            ))
+          ) : events.length > 0 ? (
+            events.map((event) => (
+              <button
+                key={event._id}
+                onClick={() => setSelectedEventId(event._id)}
+                className="group flex items-center justify-between p-6 rounded-[2rem] border border-zinc-200 dark:border-white/5 bg-white dark:bg-white/2 hover:border-primary/50 hover:bg-primary/2 transition-all text-left shadow-sm"
+              >
+                <div className="space-y-1">
+                  <span className="text-xs font-black uppercase tracking-widest text-zinc-900 dark:text-white group-hover:text-primary transition-colors">
+                    {event.name}
+                  </span>
+                  <div className="flex items-center gap-2 text-[10px] text-zinc-400 font-bold uppercase">
+                    <Calendar size={12} />
+                    {new Date(event.date).toLocaleDateString("en-US", { month: "long", day: "2-digit", year: "numeric" })}
+                  </div>
+                </div>
+                <ChevronRight size={20} className="text-zinc-300 group-hover:text-primary group-hover:translate-x-1 transition-all" />
+              </button>
+            ))
+          ) : (
+            <div className="text-center py-20 border-2 border-dashed border-zinc-200 dark:border-white/5 rounded-[3rem]">
+              <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">No active events found</p>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="max-w-2xl mx-auto space-y-8 py-10 px-4">
-      <div className="text-center space-y-2">
-        <h2 className="text-4xl font-black uppercase tracking-tighter">Access Validator</h2>
-        <p className="text-[10px] font-medium uppercase tracking-[0.3em] text-muted-foreground">
-          Validating for: {tenant?.name || "..."}
-        </p>
+    <div className="max-w-2xl mx-auto space-y-8 py-10 px-4 animate-in slide-in-from-bottom-4 duration-700">
+      <div className="flex items-center justify-between border-b border-zinc-200 dark:border-white/5 pb-6">
+        <div className="space-y-1">
+          <h2 className="text-3xl font-black uppercase tracking-tighter italic">Validator</h2>
+          <p className="text-[9px] font-bold uppercase tracking-[0.3em] text-primary">
+            Targeting: {events.find(e => e._id === selectedEventId)?.name}
+          </p>
+        </div>
+        <Button 
+          variant="ghost" 
+          onClick={() => { setSelectedEventId(""); stopScanner(); setScanResult(null); }}
+          className="text-[9px] font-black uppercase tracking-widest rounded-xl hover:bg-primary/10 hover:text-primary"
+        >
+          Change Event
+        </Button>
       </div>
 
-      <div className="relative aspect-square rounded-[3rem] border-2 border-primary/20 bg-zinc-900/50 flex flex-col items-center justify-center overflow-hidden group">
+      <div className="relative aspect-square rounded-[3rem] border-2 border-zinc-200 dark:border-white/10 bg-zinc-900 overflow-hidden group shadow-2xl">
         <video 
           ref={videoRef} 
           className={cn("absolute inset-0 w-full h-full object-cover", !isScanning && "hidden")} 
         />
         
         {!isScanning && (
-          <>
-            <div className="absolute inset-0 bg-primary/5 animate-pulse" />
-            <ScanQrCode size={80} className="text-primary/40 group-hover:scale-110 transition-transform duration-500" />
+          <div className="absolute inset-0 flex flex-col items-center justify-center p-10 text-center">
+            <div className="absolute inset-0 bg-primary/2 animate-pulse" />
+            <ScanQrCode size={80} className="text-zinc-700 dark:text-white/10 mb-6 group-hover:scale-110 transition-transform duration-500" />
             <Button 
               onClick={startScanner}
-              variant="outline" 
-              className="z-10 mt-4 rounded-xl border-primary/20 bg-background/50 backdrop-blur-md font-black uppercase text-[10px] tracking-widest"
+              className="z-10 h-14 px-10 rounded-2xl bg-primary text-black font-black uppercase text-[11px] tracking-[0.2em] shadow-xl active:scale-95 transition-all"
             >
-              Start Camera
+              Start Scanner
             </Button>
-          </>
+          </div>
         )}
 
         {isScanning && (
-          <div className="absolute bottom-6 z-10">
-             <Button onClick={stopScanner} variant="destructive" size="sm" className="rounded-full gap-2 px-6 font-black uppercase text-[10px]">
-                <CameraOff size={14} /> Stop
+          <div className="absolute bottom-10 inset-x-0 flex justify-center z-10">
+             <Button onClick={stopScanner} variant="destructive" className="rounded-2xl gap-2 px-8 h-12 font-black uppercase text-[10px] tracking-widest shadow-2xl">
+                <CameraOff size={16} /> Terminate
              </Button>
           </div>
         )}
 
         <div className={cn(
-          "absolute top-1/2 w-full h-px bg-primary/20 shadow-[0_0_15px_rgba(var(--primary),0.5)] animate-scan pointer-events-none",
+          "absolute top-1/2 w-full h-1 bg-primary/40 shadow-[0_0_20px_rgba(var(--primary),0.8)] animate-scan pointer-events-none z-20",
           !isScanning && "hidden"
         )} />
       </div>
 
       <div className="space-y-4">
-        <div className="flex gap-4">
+        <div className="flex gap-3">
           <input 
             value={ticketId}
             onChange={(e) => setTicketId(e.target.value)}
-            placeholder="ENTER TICKET ID MANUALLY" 
-            className="flex-1 bg-card border border-border rounded-2xl px-6 text-[10px] font-bold tracking-widest uppercase focus:outline-none focus:ring-1 focus:ring-primary h-14"
+            placeholder="MANUAL ENTRY TICKET ID" 
+            className={cn(
+              "flex-1 bg-white dark:bg-white/5 border border-zinc-200 dark:border-white/10 rounded-2xl px-6 text-[11px] font-black tracking-widest uppercase focus:outline-none focus:ring-2 focus:ring-primary/20 h-16 shadow-sm",
+              AUTOFILL_FIX
+            )}
           />
           <Button 
             onClick={() => handleValidation(ticketId)}
             disabled={isLoading || !ticketId}
-            className="rounded-2xl h-14 px-8 font-black uppercase text-[10px] tracking-[0.2em]"
+            className="rounded-2xl h-16 px-10 font-black uppercase text-[11px] tracking-[0.2em] shadow-lg"
           >
-            {isLoading ? <Loader2 className="animate-spin" /> : "Validate"}
+            {isLoading ? <Loader2 className="animate-spin" /> : "Verify"}
           </Button>
         </div>
 
         {scanResult && (
           <div className={cn(
-            "p-6 rounded-2xl border flex items-center gap-4 animate-in fade-in zoom-in-95 duration-300",
-            scanResult.success ? "bg-emerald-500/10 border-emerald-500/50 text-emerald-500" : "bg-destructive/10 border-destructive/50 text-destructive"
+            "p-8 rounded-[2.5rem] border-2 flex flex-col items-center text-center gap-4 animate-in zoom-in-95 duration-500 shadow-2xl",
+            scanResult.success 
+              ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400" 
+              : "bg-destructive/10 border-destructive/20 text-destructive"
           )}>
-            <ShieldCheck className={cn("shrink-0", !scanResult.success && "hidden")} />
-            <p className="text-[10px] font-black uppercase tracking-widest">{scanResult.msg}</p>
+            <div className={cn(
+              "p-4 rounded-full mb-2",
+              scanResult.success ? "bg-emerald-500/20" : "bg-destructive/20"
+            )}>
+              <ShieldCheck size={40} strokeWidth={2.5} />
+            </div>
+            <div>
+              <h4 className="text-xl font-black uppercase tracking-tighter leading-none mb-1">
+                {scanResult.success ? "Access Granted" : "Access Denied"}
+              </h4>
+              <p className="text-[10px] font-bold uppercase tracking-widest opacity-80">{scanResult.msg}</p>
+            </div>
+            <Button 
+              variant="outline" 
+              onClick={() => setScanResult(null)}
+              className="mt-2 rounded-xl border-current text-[9px] font-black uppercase tracking-widest h-8"
+            >
+              Clear
+            </Button>
           </div>
         )}
       </div>
