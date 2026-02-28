@@ -12,7 +12,7 @@ MembershipRouter.post(
   "/add",
   userMiddleware,
   TenantMiddleware,
-  authorize(["Admin"]),
+  authorize(["Admin", "Moderator"]),
   async (req: Request, res: Response) => {
     try {
       if (!req.userId || !req.tenantId) {
@@ -20,7 +20,20 @@ MembershipRouter.post(
           msg: "Authentication/Tenant context missing",
         });
       }
+
       const { email, role } = req.body;
+
+      const requesterMembership = await MembershipModel.findOne({
+        userId: req.userId,
+        tenantId: req.tenantId
+      });
+
+      if (requesterMembership?.role === "Moderator" && role !== "Volunteer") {
+        return res.status(403).json({
+          msg: "Moderators can only add Volunteers",
+        });
+      }
+
       const getUser = await UserModel.findOne({
         email: email,
       });
@@ -57,7 +70,7 @@ MembershipRouter.get(
   "/getAllMembers",
   userMiddleware,
   TenantMiddleware,
-  authorize(["Admin"]),
+  authorize(["Admin", "Moderator"]),
   async (req: Request, res: Response) => {
     try {
       if (!req.userId || !req.tenantId) {
@@ -86,7 +99,7 @@ MembershipRouter.delete(
   "/remove",
   userMiddleware,
   TenantMiddleware,
-  authorize(["Admin"]),
+  authorize(["Admin", "Moderator"]),
   async (req: Request, res: Response) => {
     try {
       if (!req.userId || !req.tenantId) {
@@ -95,15 +108,32 @@ MembershipRouter.delete(
         });
       }
       const { id } = req.body;
-      const deletedMembership = await MembershipModel.findOneAndDelete({
+
+      const requesterMembership = await MembershipModel.findOne({
+        userId: req.userId,
+        tenantId: req.tenantId
+      });
+
+      const targetMembership = await MembershipModel.findOne({
+        userId: id,
+        tenantId: req.tenantId
+      });
+
+      if (!targetMembership) {
+        return res.status(404).json({ msg: "Member not found" });
+      }
+
+      if (requesterMembership?.role === "Moderator" && targetMembership.role !== "Volunteer") {
+        return res.status(403).json({
+          msg: "Moderators can only remove Volunteers",
+        });
+      }
+
+      await MembershipModel.findOneAndDelete({
         userId: id,
         tenantId: req.tenantId,
       });
-      if (!deletedMembership) {
-        return res
-          .status(404)
-          .json({ msg: "Member not found in this organization" });
-      }
+
       return res.json({
         msg: "Membership deleted successfully!!",
       });

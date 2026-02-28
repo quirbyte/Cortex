@@ -30,6 +30,8 @@ export default function Members() {
   const [statusMsg, setStatusMsg] = useState<{ type: "success" | "error"; msg: string } | null>(null);
 
   const isAdmin = myRole === "Admin";
+  const isModerator = myRole === "Moderator";
+  const canManage = isAdmin || isModerator;
 
   const fetchMembers = async () => {
     try {
@@ -69,7 +71,7 @@ export default function Members() {
       setIsLoading(true);
       await apiClient.post("/memberships/add", {
         email: inviteEmail,
-        role: inviteRole,
+        role: isModerator ? "Volunteer" : inviteRole,
       });
       setInviteEmail("");
       setIsInviteOpen(false);
@@ -84,7 +86,9 @@ export default function Members() {
   };
 
   useEffect(() => {
-    fetchMembers();
+    if (tenant?._id) {
+      fetchMembers();
+    }
   }, [tenant?._id]);
 
   return (
@@ -149,7 +153,7 @@ export default function Members() {
           </div>
         </div>
 
-        {isAdmin && (
+        {canManage && (
           <Button
             onClick={() => setIsInviteOpen(!isInviteOpen)}
             className={cn(
@@ -180,15 +184,23 @@ export default function Members() {
                 required
               />
             </div>
-            <select
-              value={inviteRole}
-              onChange={(e) => setInviteRole(e.target.value)}
-              className="bg-white dark:bg-black/40 border border-zinc-200 dark:border-white/10 rounded-xl px-4 py-2.5 text-[10px] font-black uppercase tracking-widest focus:outline-none cursor-pointer min-w-[140px] appearance-none"
-            >
-              <option value="Volunteer">Volunteer</option>
-              <option value="Moderator">Moderator</option>
-              <option value="Admin">Admin</option>
-            </select>
+            
+            {isAdmin ? (
+              <select
+                value={inviteRole}
+                onChange={(e) => setInviteRole(e.target.value)}
+                className="bg-white dark:bg-black/40 border border-zinc-200 dark:border-white/10 rounded-xl px-4 py-2.5 text-[10px] font-black uppercase tracking-widest focus:outline-none cursor-pointer min-w-35 appearance-none"
+              >
+                <option value="Volunteer">Volunteer</option>
+                <option value="Moderator">Moderator</option>
+                <option value="Admin">Admin</option>
+              </select>
+            ) : (
+              <div className="bg-zinc-100 dark:bg-white/5 border border-zinc-200 dark:border-white/10 rounded-xl px-6 py-2.5 text-[10px] font-black uppercase tracking-widest flex items-center text-zinc-500">
+                Volunteer Only
+              </div>
+            )}
+
             <Button disabled={isLoading} className="h-10 rounded-xl px-8 font-black uppercase text-[10px] tracking-[0.2em]">
               {isLoading ? <Loader2 className="animate-spin" /> : "Establish Link"}
             </Button>
@@ -246,7 +258,7 @@ export default function Members() {
                 </div>
 
                 <div className="col-span-1 flex justify-end">
-                  {isAdmin && member.role !== "Admin" && (
+                  {((isAdmin && member.role !== "Admin") || (isModerator && member.role === "Volunteer")) ? (
                     <Button
                       onClick={() => setMemberToRemove(member)}
                       variant="ghost"
@@ -254,8 +266,7 @@ export default function Members() {
                     >
                       <Trash2 size={16} className="transition-transform group-hover:scale-110" />
                     </Button>
-                  )}
-                  {member.role === "Admin" && (
+                  ) : (
                     <div className="h-9 w-9 flex items-center justify-center">
                       <ShieldCheck size={16} className="text-zinc-200 dark:text-white/10" />
                     </div>

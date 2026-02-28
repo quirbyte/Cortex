@@ -3,9 +3,10 @@ import { TenantMiddleware } from "../Middleware/TenantMiddleware";
 import { EventModel, DEFAULT_EVENT_BANNER } from "../Models/Event";
 import { userMiddleware } from "../Middleware/UserMiddleware";
 import z from "zod";
-import { Types } from "mongoose";
+import mongoose,{ Types } from "mongoose";
 import { authorize } from "../Middleware/RoleMiddleware";
 import { upload } from "../config/cloudinary";
+import { BookingModel } from "../Models/Booking";
 
 export const EventRouter = Router();
 
@@ -19,10 +20,12 @@ const createEventSchema = z.object({
     },
     { message: "Event date must be today or in the future" },
   ),
-  time: z.string().regex(
-    /^(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d)?$|^(0?[1-9]|1[0-2]):[0-5]\d\s?(?:AM|PM)$/i, 
-    "Invalid time format"
-  ),
+  time: z
+    .string()
+    .regex(
+      /^(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d)?$|^(0?[1-9]|1[0-2]):[0-5]\d\s?(?:AM|PM)$/i,
+      "Invalid time format",
+    ),
   price: z.coerce.number().min(0),
   venue: z.string().min(3).max(255),
   total: z.coerce.number().int().min(1),
@@ -61,7 +64,7 @@ EventRouter.post(
       if (err) {
         return res.status(400).json({
           msg: "File upload failed",
-          error: err.message
+          error: err.message,
         });
       }
       next();
@@ -74,7 +77,7 @@ EventRouter.post(
       }
 
       const validation = createEventSchema.safeParse(req.body);
-      
+
       if (!validation.success) {
         return res.status(400).json({
           msg: "Validation failed",
@@ -101,14 +104,14 @@ EventRouter.post(
 
       const newEvent = await EventModel.create(eventData);
 
-      return res.status(201).json({ 
-        msg: "Event created successfully!!", 
-        eventId: (newEvent as any)._id 
+      return res.status(201).json({
+        msg: "Event created successfully!!",
+        eventId: (newEvent as any)._id,
       });
     } catch (e: any) {
       return res.status(500).json({ msg: "Internal server error" });
     }
-  }
+  },
 );
 
 EventRouter.get("/", async (req: Request, res: Response) => {
@@ -181,7 +184,7 @@ EventRouter.put(
       if (err) {
         return res.status(400).json({
           msg: "File upload failed",
-          error: err.message
+          error: err.message,
         });
       }
       next();
@@ -190,7 +193,9 @@ EventRouter.put(
   async (req: Request, res: Response) => {
     try {
       if (!req.userId || !req.tenantId) {
-        return res.status(401).json({ msg: "Authentication/Tenant context missing" });
+        return res
+          .status(401)
+          .json({ msg: "Authentication/Tenant context missing" });
       }
 
       const id = req.params.id as string;
@@ -247,25 +252,75 @@ EventRouter.delete(
   TenantMiddleware as RequestHandler,
   authorize(["Admin", "Moderator"]) as RequestHandler,
   async (req: Request, res: Response) => {
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
     try {
       if (!req.userId || !req.tenantId) {
-        return res.status(401).json({ msg: "Authentication/Tenant context missing!" });
+        return res
+          .status(401)
+          .json({ msg: "Authentication/Tenant context missing!" });
       }
+
       const id = req.params.id as string;
       if (!Types.ObjectId.isValid(id)) {
         return res.status(400).json({ msg: "Invalid ID format" });
       }
+
       const queryId = new Types.ObjectId(id);
-      const deletedEvent = await EventModel.findOneAndUpdate(
-        { _id: queryId, tenantId: req.tenantId },
-        { $set: { isDeleted: true } },
-      );
-      if (!deletedEvent) {
-        return res.status(404).json({ msg: "Event not found!!" });
+
+      const event = await EventModel.findOne({
+        _id: queryId,
+        tenantId: req.tenantId,
+        isDeleted: { $ne: true },
+      }).session(session);
+
+      if (!event) {
+        return res
+          .status(404)
+          .json({ msg: "Event not found or already deleted!!" });
       }
-      return res.json({ msg: "Event deleted successfully!!" });
+
+      const activeBookings = await BookingModel.find({
+        event_id: queryId,
+        status: { $in: ["Confirmed", "Pending"] },
+      }).session(session);
+
+      if (activeBookings.length > 0) {
+        await BookingModel.updateMany(
+          { event_id: queryId, status: { $in: ["Confirmed", "Pending"] } },
+          {
+            $set: {
+              status: "Refunded",
+              refundedAt: new Date(),
+              notes: `Event "${event.name}" was cancelled by the organizer. Automatic refund processed.`,
+            },
+          },
+        ).session(session);
+
+        console.log(
+          `System: Processed internal refunds for ${activeBookings.length} operatives.`,
+        );
+      }
+
+      await EventModel.findOneAndUpdate(
+        { _id: queryId },
+        { $set: { isDeleted: true, status: "Cancelled" } },
+      ).session(session);
+
+      await session.commitTransaction();
+
+      return res.json({
+        msg: "Event cancelled successfully. All active bookings have been refunded.",
+        refundCount: activeBookings.length,
+      });
     } catch (e) {
-      return res.status(500).json({ msg: "Internal server error" });
+      await session.abortTransaction();
+      return res
+        .status(500)
+        .json({ msg: "Critical failure during event termination." });
+    } finally {
+      session.endSession();
     }
   },
 );

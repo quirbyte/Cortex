@@ -246,30 +246,63 @@ TenantRouter.delete(
   TenantMiddleware,
   authorize(["Admin"]),
   async (req: Request, res: Response) => {
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
     try {
-      if (!req.tenantId || !req.userId) {
-        return res.status(404).json({
-          msg: "User not verified!!",
-        });
-      }
       const TenantFromReq = req.params.id as string;
       if (!Types.ObjectId.isValid(TenantFromReq)) {
         return res.status(400).json({ msg: "Invalid ID format" });
       }
       const queryId = new Types.ObjectId(TenantFromReq);
-      await TenantModel.deleteOne({
-        _id: queryId,
-      });
-      await MembershipModel.deleteMany({
-        tenantId: queryId,
-      });
+      const events = await EventModel.find({ tenantId: queryId }).session(
+        session,
+      );
+      const eventIds = events.map((event) => event._id);
+
+      const bookings = await BookingModel.find({
+        event_id: { $in: eventIds },
+        status: { $ne: "Refunded" },
+      }).session(session);
+
+      for (const booking of bookings) {
+        await BookingModel.updateOne(
+          { _id: booking._id },
+          {
+            $set: {
+              status: "Refunded",
+              refundedAt: new Date(),
+              notes: "System-wide tenant purge: Automatic refund processed.",
+            },
+          },
+        ).session(session);
+
+        console.log(`Internal credit returned to user: ${booking.user_id}`);
+      }
+
+      await EventModel.updateMany(
+        { tenantId: queryId },
+        { $set: { isDeleted: true, status: "Cancelled" } },
+      ).session(session);
+
+      await MembershipModel.deleteMany({ tenantId: queryId }).session(session);
+
+      await TenantModel.updateOne(
+        { _id: queryId },
+        { $set: { isDeleted: true, deletedAt: new Date() } },
+      ).session(session);
+
+      await session.commitTransaction();
       return res.json({
-        msg: "Tenant deleted successfully!!",
+        msg: "Tenant archived. All bookings marked as refunded in system logs.",
       });
     } catch (e) {
-      return res.status(500).json({
-        msg: "Failed to Delete Tenant..",
-      });
+      await session.abortTransaction();
+      return res
+        .status(500)
+        .json({ msg: "Transaction failed. No data was altered." });
+    } finally {
+      session.endSession();
     }
   },
 );
