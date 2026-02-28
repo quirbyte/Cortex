@@ -2,10 +2,11 @@ import { useState, useEffect, useRef } from "react";
 import { useTenant } from "@/hooks/useTenant";
 import { Button } from "@/components/ui/button";
 import { Card, CardTitle } from "@/components/ui/card";
-import { Plus, Trash2, CalendarDays, Loader2, FileCheck, Target, MapPin, Zap, ImageIcon, X } from "lucide-react";
+import { Plus, Trash2, CalendarDays, Loader2, FileCheck, Target, MapPin, Zap, ImageIcon, X, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { MdStadium } from "react-icons/md";
 import { FaRupeeSign } from "react-icons/fa";
 import { cn } from "@/lib/utils";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
   Sheet,
   SheetContent,
@@ -56,7 +57,7 @@ function EventCard({
 }: { 
   event: EventInterface; 
   isAdmin: boolean; 
-  onDelete: (id: string) => void 
+  onDelete: (event: EventInterface) => void 
 }) {
   const remaining = event.ticketDetails.total - event.ticketDetails.sold;
   const percentage = (event.ticketDetails.sold / event.ticketDetails.total) * 100;
@@ -99,13 +100,12 @@ function EventCard({
               </div>
               <div className="flex gap-2">
                 {isAdmin && (
-                  <Button 
-                    onClick={() => onDelete(event._id)} 
-                    variant="ghost" 
-                    className="h-10 w-10 p-0 rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 text-zinc-400 dark:text-white/40 hover:text-red-500 transition-colors"
+                  <button 
+                    onClick={() => onDelete(event)} 
+                    className="h-10 w-10 flex items-center justify-center rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 text-zinc-400 dark:text-white/40 hover:text-red-500 transition-colors"
                   >
                     <Trash2 size={16} />
-                  </Button>
+                  </button>
                 )}
                 <Button className="h-10 px-5 rounded-xl bg-zinc-900 text-white dark:bg-white dark:text-black font-black text-[9px] uppercase tracking-wider hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors">
                   Details
@@ -117,7 +117,7 @@ function EventCard({
               <div className="flex justify-between items-center text-[8px] font-black uppercase">
                 <span className="text-zinc-400 dark:text-white/30">Capacity Load</span>
                 <span className={cn(remaining < 50 ? "text-orange-600 dark:text-orange-500 animate-pulse" : "text-zinc-500 dark:text-white/50")}>
-                  {remaining} Units Available
+                  {remaining} Seats Available
                 </span>
               </div>
               <div className="h-1 w-full bg-zinc-100 dark:bg-white/10 rounded-full overflow-hidden">
@@ -141,10 +141,14 @@ export default function TenantEvents() {
   const [events, setEvents] = useState<EventInterface[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitLoading, setIsSubmitLoading] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [selectedFileName, setSelectedFileName] = useState<string | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
+  
+  const [eventToDecommission, setEventToDecommission] = useState<EventInterface | null>(null);
+  const [statusMsg, setStatusMsg] = useState<{ type: "success" | "error"; msg: string } | null>(null);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -210,27 +214,87 @@ export default function TenantEvents() {
       setPreviewUrl(null);
       formElement.reset();
       fetchEvents();
+      setStatusMsg({ type: "success", msg: "Deployment authorized successfully" });
     } catch (error: any) {
       const msg = error.response?.data?.error || error.response?.data?.msg || "Internal Server Error";
       setFileError(msg);
     } finally {
       setIsSubmitLoading(false);
+      setTimeout(() => setStatusMsg(null), 4000);
     }
   };
 
-  const handleDelete = async (id: string) => {
-    const confirmed = window.confirm("Decommission this event?");
-    if (!confirmed) return;
+  const handleConfirmDelete = async () => {
+    if (!eventToDecommission) return;
     try {
-      await apiClient.delete(`/events/${id}`);
-      setEvents((prev) => prev.filter((event) => event._id !== id));
+      setIsDeleting(true);
+      await apiClient.delete(`/events/${eventToDecommission._id}`);
+      setEvents((prev) => prev.filter((event) => event._id !== eventToDecommission._id));
+      setEventToDecommission(null);
+      setStatusMsg({ type: "success", msg: "Event decommissioned successfully" });
     } catch (error) {
-      console.error(error);
+      setStatusMsg({ type: "error", msg: "Decommissioning sequence failed" });
+    } finally {
+      setIsDeleting(false);
+      setTimeout(() => setStatusMsg(null), 4000);
     }
   };
 
   return (
     <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+      
+      {statusMsg && (
+        <div className={cn(
+          "fixed top-6 left-1/2 -translate-x-1/2 z-50 px-6 py-3 rounded-2xl border flex items-center gap-3 animate-in slide-in-from-top-4 duration-300 shadow-2xl backdrop-blur-md",
+          statusMsg.type === "success" 
+            ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-500" 
+            : "bg-red-500/10 border-red-500/20 text-red-500"
+        )}>
+          {statusMsg.type === "success" ? <CheckCircle2 size={14} /> : <AlertTriangle size={14} />}
+          <p className="text-[10px] font-black uppercase tracking-widest">{statusMsg.msg}</p>
+          <button onClick={() => setStatusMsg(null)} className="ml-4 opacity-50 hover:opacity-100">
+            <X size={14} />
+          </button>
+        </div>
+      )}
+
+      {eventToDecommission && (
+        <div className="max-w-2xl mx-auto">
+          <Alert variant="destructive" className="rounded-3xl border-red-500/20 bg-red-500/5 p-6 animate-in zoom-in-95 duration-300">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 w-full">
+              <div className="flex gap-4">
+                <AlertTriangle className="h-5 w-5 mt-1" />
+                <div>
+                  <AlertTitle className="text-[11px] font-black uppercase tracking-[0.2em] mb-1">Critical Action: Decommissioning</AlertTitle>
+                  <AlertDescription className="text-[10px] font-bold uppercase opacity-70 tracking-tight leading-relaxed">
+                    Terminate entry for <span className="text-red-500 underline underline-offset-4">{eventToDecommission.name}</span>? This cannot be undone.
+                  </AlertDescription>
+                </div>
+              </div>
+              <div className="flex gap-3 shrink-0">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => setEventToDecommission(null)}
+                  className="h-10 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-zinc-200 dark:hover:bg-white/10"
+                >
+                  Abort
+                </Button>
+                <Button 
+                  variant="destructive" 
+                  size="sm" 
+                  disabled={isDeleting}
+                  onClick={handleConfirmDelete}
+                  className="h-10 px-6 rounded-xl text-[10px] font-black uppercase tracking-widest bg-red-500 text-white shadow-lg shadow-red-500/20"
+                >
+                  {isDeleting ? <Loader2 size={14} className="animate-spin" /> : "Confirm Termination"}
+                </Button>
+              </div>
+            </div>
+          </Alert>
+        </div>
+      )}
+
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 border-b border-zinc-200 dark:border-white/5 pb-8">
         <div className="space-y-1">
           <h2 className="text-4xl font-black uppercase tracking-tighter text-zinc-900 dark:text-white italic">Event Registry</h2>
@@ -386,7 +450,7 @@ export default function TenantEvents() {
               key={event._id} 
               event={event} 
               isAdmin={isAdmin} 
-              onDelete={handleDelete} 
+              onDelete={(e) => setEventToDecommission(e)} 
             />
           ))
         ) : (

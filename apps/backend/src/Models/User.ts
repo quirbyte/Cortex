@@ -4,6 +4,7 @@ export interface InterfaceUser extends Document {
   name: string;
   email: string;
   password: string;
+  balance: number; 
 }
 
 const UserSchema = new Schema<InterfaceUser>(
@@ -20,6 +21,10 @@ const UserSchema = new Schema<InterfaceUser>(
     password: {
       type: String,
       required: true,
+    },
+    balance: {
+      type: Number,
+      default: 0, 
     },
   },
   { timestamps: true },

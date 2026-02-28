@@ -8,6 +8,7 @@ import { UserModel } from "../Models/User";
 import { userMiddleware } from "../Middleware/UserMiddleware";
 import { MembershipModel } from "../Models/Membership";
 import { BookingModel } from "../Models/Booking";
+import { EventModel } from "../Models/Event"; 
 
 dotenv.config();
 export const UserRouter = Router();
@@ -21,6 +22,10 @@ const signupSchema = z.object({
 const loginSchema = z.object({
   email: z.string().email().min(10),
   password: z.string().min(6),
+});
+
+const topupSchema = z.object({
+  amount: z.number().min(10).max(100000),
 });
 
 UserRouter.post("/signup", async (req: Request, res: Response) => {
@@ -41,6 +46,7 @@ UserRouter.post("/signup", async (req: Request, res: Response) => {
       name: username,
       email: email,
       password: hashed_pw,
+      balance: 0,
     });
     return res.status(201).json({ msg: "You are Signed Up successfully!!" });
   } catch (e) {
@@ -168,5 +174,90 @@ UserRouter.delete("/delete", userMiddleware as RequestHandler, async (req: Reque
     return res.status(500).json({ msg: "Failed to delete account" });
   } finally {
     session.endSession();
+  }
+});
+
+UserRouter.get("/dashboard-summary", userMiddleware as RequestHandler, async (req: Request, res: Response) => {
+  try {
+    const userId = req.userId;
+    if (!userId) return res.status(401).json({ msg: "Unauthorized" });
+
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const [bookingsCount, user, recentBookings, monthlyActivity] = await Promise.all([
+      BookingModel.countDocuments({ user_id: userId }),
+      UserModel.findById(userId).select("balance"),
+      BookingModel.find({ user_id: userId })
+        .sort({ createdAt: -1 })
+        .limit(3)
+        .populate({ path: "event_id", model: EventModel }),
+      BookingModel.countDocuments({ 
+        user_id: userId, 
+        createdAt: { $gte: thirtyDaysAgo } 
+      })
+    ]);
+
+    const nextBooking = await BookingModel.findOne({ user_id: userId })
+      .populate({
+        path: "event_id",
+        model: EventModel,
+        match: { date: { $gte: new Date() } }
+      })
+      .sort({ "event_id.date": 1 });
+
+    let daysToNextEvent = 0;
+    if (nextBooking && (nextBooking.event_id as any)?.date) {
+      const eventDate = new Date((nextBooking.event_id as any).date);
+      const diffTime = eventDate.getTime() - new Date().getTime();
+      daysToNextEvent = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
+    }
+
+    const recentActivity = recentBookings.map((booking: any) => ({
+      id: booking._id,
+      title: booking.event_id?.event_name || "System Event",
+      location: booking.event_id?.venue || "Main Grid",
+      amount: booking.event_id?.price || 0,
+      type: 'debit'
+    }));
+
+    return res.json({
+      stats: {
+        totalBookings: bookingsCount,
+        balance: user?.balance || 0,
+        engagement: Math.min(monthlyActivity * 20 + 10, 100), // Base 10% + 20% per booking
+        daysToNextEvent
+      },
+      recentActivity
+    });
+  } catch (e) {
+    return res.status(500).json({ msg: "Failed to fetch dashboard summary" });
+  }
+});
+
+UserRouter.post("/wallet/topup", userMiddleware as RequestHandler, async (req: Request, res: Response) => {
+  const validation = topupSchema.safeParse(req.body);
+  if (!validation.success) {
+    return res.status(400).json({ msg: "Amount must be a positive number" });
+  }
+
+  try {
+    const { amount } = validation.data;
+    const user = await UserModel.findByIdAndUpdate(
+      req.userId,
+      { $inc: { balance: amount } },
+      { new: true }
+    ).select("balance");
+
+    if (!user) {
+      return res.status(404).json({ msg: "User not found" });
+    }
+
+    return res.json({ 
+      balance: user.balance, 
+      msg: `₹${amount} added successfully!` 
+    });
+  } catch (e) {
+    return res.status(500).json({ msg: "Failed to process top-up" });
   }
 });
