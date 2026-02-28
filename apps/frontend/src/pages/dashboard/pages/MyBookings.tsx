@@ -150,7 +150,7 @@ export default function MyBookings() {
             <Button 
               variant="link" 
               className="mt-2 text-primary text-[10px] font-black uppercase tracking-widest"
-              onClick={() => window.location.href = "/events"}
+              onClick={() => window.location.href = "/dashboard/events"}
             >
               Acquire Passes
             </Button>

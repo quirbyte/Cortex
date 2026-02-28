@@ -54,7 +54,7 @@ export default function LoginPage() {
       setSuccess(true);
       setTimeout(() => {
         setSuccess(false);
-        navigate("/dashboard");
+        navigate("/dashboard/overview");
       }, 3000);
     } catch (err: any) {
       setError(err?.response?.data?.msg || err.message);

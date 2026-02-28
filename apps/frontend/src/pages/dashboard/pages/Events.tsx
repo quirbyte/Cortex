@@ -6,6 +6,7 @@ import apiClient from "@/api/apiClient";
 import QRCard from "@/cards/QRCard";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { XCircleIcon, Loader2, Sparkles } from "lucide-react";
+import { EventDetailsDialog } from "@/cards/EventDetailsDialog";
 
 interface EventData {
   _id: string;
@@ -33,6 +34,7 @@ export default function Events() {
   const [loading, setLoading] = useState(true);
   const [bookingId, setBookingId] = useState<string | null>(null);
   const [showQR, setShowQR] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<EventData | null>(null);
   const [alert, setAlert] = useState<{ show: boolean; message: string }>({ 
     show: false, 
     message: "" 
@@ -158,6 +160,7 @@ export default function Events() {
                     sold={event.ticketDetails.sold}
                     total={event.ticketDetails.total}
                     handleSubmit={handleSubmit}
+                    handleDetails={() => setSelectedEvent(event)}
                   />
                 ))
               ) : (
@@ -182,6 +185,15 @@ export default function Events() {
           </footer>
         </div>
       </div>
+
+      <EventDetailsDialog 
+        event={selectedEvent} 
+        onClose={() => setSelectedEvent(null)} 
+        onBook={(id: string) => {
+          handleSubmit(id);
+          setSelectedEvent(null);
+        }}
+      />
 
       {showQR && bookingId && (
         <div className="fixed inset-0 z-100 flex items-center justify-center p-4 sm:p-6">

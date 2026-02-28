@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardTitle } from "@/components/ui/card";
 import { MdStadium } from "react-icons/md";
 import { FaRupeeSign } from "react-icons/fa";
+import { Info } from "lucide-react";
 
 interface CardProps {
   event_id: string;
@@ -13,12 +14,13 @@ interface CardProps {
   venue: string;
   imageRef?: string;
   handleSubmit: (event_id: string) => void;
+  handleDetails: (event_id: string) => void;
 }
 
 export default function EventCard(props: CardProps) {
   const remaining = props.total - props.sold;
   const percentage = (props.sold / props.total) * 100;
-  const { event_id, handleSubmit, imageRef } = props;
+  const { event_id, handleSubmit, handleDetails, imageRef } = props;
 
   return (
     <div className="relative group w-72 aspect-3/4">
@@ -68,12 +70,22 @@ export default function EventCard(props: CardProps) {
                 </div>
               </div>
 
-              <Button
-                onClick={() => handleSubmit(event_id)}
-                className="h-10 px-6 rounded-xl bg-zinc-900 dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200 font-bold text-[10px] uppercase tracking-wider transition-all active:scale-95 shadow-lg"
-              >
-                Book
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => handleDetails(event_id)}
+                  className="h-10 w-10 p-0 rounded-xl border-black/10 dark:border-white/10 bg-white/50 dark:bg-black/50 backdrop-blur-sm hover:bg-white dark:hover:bg-zinc-800 transition-all active:scale-95 shadow-sm"
+                >
+                  <Info size={16} className="text-black dark:text-white" />
+                </Button>
+
+                <Button
+                  onClick={() => handleSubmit(event_id)}
+                  className="h-10 px-5 rounded-xl bg-zinc-900 dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200 font-bold text-[10px] uppercase tracking-wider transition-all active:scale-95 shadow-lg"
+                >
+                  Book
+                </Button>
+              </div>
             </div>
 
             <div className="space-y-2">
