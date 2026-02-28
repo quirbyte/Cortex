@@ -117,10 +117,7 @@ EventRouter.post(
 EventRouter.get("/", async (req: Request, res: Response) => {
   try {
     const page = Math.max(1, parseInt(req.query.page as string) || 1);
-    const limit = Math.max(
-      1,
-      Math.min(100, parseInt(req.query.limit as string) || 10),
-    );
+    const limit = Math.max(1, Math.min(100, parseInt(req.query.limit as string) || 10));
     const skip = (page - 1) * limit;
 
     const today = new Date();
@@ -129,7 +126,7 @@ EventRouter.get("/", async (req: Request, res: Response) => {
 
     const [events, totalEvents] = await Promise.all([
       EventModel.find(filter)
-        .select("-tenantId")
+        .populate("tenantId", "name") // Fetch only the 'name' from the Tenant model
         .sort({ date: 1 })
         .skip(skip)
         .limit(limit),

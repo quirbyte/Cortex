@@ -6,8 +6,6 @@ import { useTenant } from "@/hooks/useTenant";
 import apiClient from "@/api/apiClient";
 import { cn } from "@/lib/utils";
 
-const AUTOFILL_FIX = "autofill:shadow-[0_0_0_1000px_#f9fafb_inset] dark:autofill:shadow-[0_0_0_1000px_#09090b_inset] autofill:[-webkit-text-fill-color:#18181b] dark:autofill:[-webkit-text-fill-color:white] transition-colors duration-[50000s] ease-in-out";
-
 interface EventInterface {
   _id: string;
   name: string;
@@ -64,7 +62,7 @@ export default function VerifyTickets() {
         headers: { "tenant-slug": tenant.slug }
       });
       setScanResult({ success: true, msg: response.data.msg });
-      setTicketId("");
+      setTicketId(""); 
     } catch (err: any) {
       setScanResult({ 
         success: false, 
@@ -184,7 +182,7 @@ export default function VerifyTickets() {
             <ScanQrCode size={80} className="text-zinc-700 dark:text-white/10 mb-6 group-hover:scale-110 transition-transform duration-500" />
             <Button 
               onClick={startScanner}
-              className="z-10 h-14 px-10 rounded-2xl bg-primary text-black font-black uppercase text-[11px] tracking-[0.2em] shadow-xl active:scale-95 transition-all"
+              className="z-10 h-14 px-10 rounded-2xl bg-primary dark:text-black font-black uppercase text-[11px] tracking-[0.2em] shadow-xl active:scale-95 transition-all"
             >
               Start Scanner
             </Button>
@@ -211,14 +209,11 @@ export default function VerifyTickets() {
             value={ticketId}
             onChange={(e) => setTicketId(e.target.value)}
             placeholder="MANUAL ENTRY TICKET ID" 
-            className={cn(
-              "flex-1 bg-white dark:bg-white/5 border border-zinc-200 dark:border-white/10 rounded-2xl px-6 text-[11px] font-black tracking-widest uppercase focus:outline-none focus:ring-2 focus:ring-primary/20 h-16 shadow-sm",
-              AUTOFILL_FIX
-            )}
+            className="flex-1 bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-white/10 rounded-2xl px-6 text-[11px] font-black tracking-widest uppercase focus:outline-none focus:ring-2 focus:ring-primary/20 h-16 shadow-sm text-zinc-900 dark:text-white placeholder:text-zinc-400 dark:placeholder:text-zinc-600 transition-colors"
           />
           <Button 
             onClick={() => handleValidation(ticketId)}
-            disabled={isLoading || !ticketId}
+            disabled={isLoading || !ticketId.trim()}
             className="rounded-2xl h-16 px-10 font-black uppercase text-[11px] tracking-[0.2em] shadow-lg"
           >
             {isLoading ? <Loader2 className="animate-spin" /> : "Verify"}
