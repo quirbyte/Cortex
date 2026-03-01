@@ -2,11 +2,13 @@
   "compilerOptions": {
     "rootDir": "./src",
     "outDir": "./dist",
+    "target": "ES2020",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
     "baseUrl": ".",
-    "target": "es2020",
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
-    "lib": ["esnext"],
+    "lib": ["ESNext"],
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "typeRoots": [
